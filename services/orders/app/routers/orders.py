@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import get_current_user_email
-from app.crud import create_order, get_order_by_id, get_orders, update_order_status
+from app.services import create_order, get_order_by_id, get_orders, update_order_status
 from app.database import get_db
 from app.models import OrderStatus
 from app.schemas import OrderCreate, OrderResponse, OrderStatusUpdate

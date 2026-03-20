@@ -6,7 +6,7 @@ from app.auth import (
     get_current_user,
     verify_password,
 )
-from app.crud import create_user, get_user_by_email, get_users
+from app.services import create_user, get_user_by_email, get_users
 from app.database import get_db
 from app.models import User
 from app.schemas import Token, UserCreate, UserLogin, UserResponse
