@@ -23,6 +23,9 @@ env/
 .env
 .env.local
 
+# RSA keys (generate with openssl, never commit)
+keys/
+
 # Docker volumes (local data)
 postgres_data/
 

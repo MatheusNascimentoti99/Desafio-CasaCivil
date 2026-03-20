@@ -1,7 +1,7 @@
 """
-JWT token validation for the Orders service.
-Uses the same SECRET_KEY as the Auth service to validate tokens.
-This service does NOT manage users — it only verifies JWT tokens.
+JWT token validation for the Orders service (RS256).
+Uses the PUBLIC key to verify tokens signed by the Auth service.
+This service does NOT have access to the private key — it cannot forge tokens.
 """
 
 from fastapi import Depends, HTTPException, status
@@ -22,12 +22,14 @@ def get_current_user_email(
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> str:
     """
-    Decode and validate the JWT token, returning the user email (sub claim).
-    This service trusts the auth-service that issued the token.
+    Decode and validate the JWT token using the PUBLIC key,
+    returning the user email (sub claim).
     """
     try:
         payload = jwt.decode(
-            credentials.credentials, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+            credentials.credentials,
+            settings.public_key,
+            algorithms=[settings.JWT_ALGORITHM],
         )
         sub: str | None = payload.get("sub")
         if sub is None:
