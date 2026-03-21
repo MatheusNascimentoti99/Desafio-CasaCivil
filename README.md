@@ -4,32 +4,24 @@ Plataforma interna de gestão de pedidos para e-commerce, construída com arquit
 
 ---
 
-## 🏗️ Arquitetura
+##  Arquitetura
 
-```
-                         ┌──────────────┐
-                         │   Cliente    │
-                         │  (Browser)   │
-                         └──────┬───────┘
-                                │ :8080
-                         ┌──────▼───────┐
-                         │    Nginx     │
-                         │ API Gateway  │
-                         └──┬───────┬───┘
-                            │       │
-              /api/auth/*   │       │   /api/orders/*
-                            │       │
-                   ┌────────▼──┐ ┌──▼────────┐
-                   │   Auth    │ │  Orders   │
-                   │  Service  │ │  Service  │
-                   │  :8001    │ │  :8002    │
-                   └────┬──────┘ └──────┬────┘
-                        │               │
-                  ┌─────▼─────┐  ┌──────▼────┐
-                  │ auth_db   │  │ orders_db │
-                  │ PostgreSQL│  │ PostgreSQL│
-                  │ :5433     │  │ :5434     │
-                  └───────────┘  └───────────┘
+```mermaid
+graph TD
+    Client["Cliente (Browser)"] -->|:8080| Nginx["Nginx API Gateway"]
+
+    Nginx -->|"/api/auth/*"| Auth["Auth Service :8001"]
+    Nginx -->|"/api/orders/*"| Orders["Orders Service :8002"]
+
+    Auth --> AuthDB[("auth_db\nPostgreSQL :5433")]
+
+    Orders --> Redis[("Redis :6379")]
+    Orders --> OrdersDB[("orders_db\nPostgreSQL :5434")]
+
+    style Redis fill:#dc382c,color:#fff,stroke:#b71c1c
+    style Nginx fill:#009639,color:#fff
+    style Auth fill:#2563eb,color:#fff
+    style Orders fill:#2563eb,color:#fff
 ```
 
 ### Componentes
@@ -41,6 +33,7 @@ Plataforma interna de gestão de pedidos para e-commerce, construída com arquit
 | Orders Service | FastAPI + Python 3.12 | 8002 | CRUD de pedidos, filtros por status |
 | Auth DB | PostgreSQL 16 | 5433 | Banco exclusivo do serviço de auth |
 | Orders DB | PostgreSQL 16 | 5434 | Banco exclusivo do serviço de pedidos |
+| Cache | Redis 7 | 6379 | Cache de respostas do Orders Service |
 
 ---
 
@@ -163,21 +156,64 @@ curl -X PATCH http://localhost:8080/api/orders/{ORDER_ID}/status \
 - Cada serviço é dono do seu schema
 - Permite escolher tecnologias diferentes por serviço no futuro
 
+### Cache com Redis (Orders Service)
+
+O serviço de pedidos utiliza **Redis** como cache de respostas, implementado via **decorators** aplicados na camada de rotas. A camada de serviço (regras de negócio) permanece inalterada.
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Decorator as "@cached decorator"
+    participant Handler as Route Handler
+    participant Redis
+    participant DB as PostgreSQL
+
+    Client->>Decorator: GET /api/orders/{id}
+    Decorator->>Redis: GET order:{id}
+    alt Cache HIT
+        Redis-->>Decorator: JSON armazenado
+        Decorator-->>Client: JSONResponse (fast path)
+    else Cache MISS
+        Decorator->>Handler: chama handler original
+        Handler->>DB: SELECT ...
+        DB-->>Handler: resultado
+        Handler-->>Decorator: Order ORM
+        Decorator->>Redis: SET order:{id} (TTL)
+        Decorator-->>Client: resposta normal
+    end
+```
+
+#### Decorators
+
+| Decorator | Aplicado em | Função |
+|---|---|---|
+| `@cached(prefix, ttl)` | Endpoints `GET` | Cache-aside — gera a chave automaticamente a partir dos parâmetros da rota |
+| `@invalidates_cache(*patterns)` | Endpoints `POST`, `PATCH` | Invalida chaves após escrita, suporta wildcards (`*`) e interpolação (`{order_id}`) |
+
+#### Configuração
+
+| Variável | Default | Descrição |
+|---|---|---|
+| `REDIS_URL` | `redis://redis:6379/0` | URL de conexão do Redis |
+| `CACHE_ENABLED` | `true` | Desativar cache sem remover o código |
+| `CACHE_TTL_ORDER` | `600` | TTL em segundos para pedido individual |
+| `CACHE_TTL_ORDER_LIST` | `300` | TTL em segundos para listagens |
+
+#### Resiliência
+- Se o Redis estiver indisponível, o app continua funcionando normalmente via PostgreSQL
+- Erros de cache são apenas logados, nunca propagados
+- `CACHE_ENABLED=false` desabilita o cache por completo
+
 ---
 
 ## 📋 O que ficaria diferente com mais tempo
 
 ### Implementaria
-- **Redis** como cache de sessões/tokens e rate limiting
 - **Alembic migrations** versionadas (atualmente tabelas são criadas pelo ORM no startup)
-- **Testes automatizados** com pytest + httpx (unitários e de integração)
-- **CI Pipeline** com GitHub Actions rodando testes a cada push
-- **MFE (Microfrontends)** com React e Module Federation
 - **Comunicação assíncrona** entre serviços via Redis Pub/Sub ou RabbitMQ
 - **Observabilidade** com logs estruturados (structlog), métricas (Prometheus) e tracing (OpenTelemetry)
 - **Rate limiting** no Nginx
 - **SSL/TLS** termination no gateway
-- **Paginação** com cursors em vez de offset
 
 ### Decisões que não tomei e por quê
 - **Não usei Django REST Framework**: apesar de mais popular, seria overengineering para um PMV com microsserviços simples
