@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import get_current_user_email
+from app.decorators import cached, invalidates_cache
+from app.config import settings
 from app.services import create_order, get_order_by_id, get_orders, update_order_status
 from app.database import get_db
 from app.models import OrderStatus
@@ -17,6 +19,7 @@ router = APIRouter(prefix="/api/orders", tags=["orders"])
     response_model=list[OrderResponse],
     summary="Listar pedidos com filtro opcional por status",
 )
+@cached(prefix="orders:list", ttl=settings.CACHE_TTL_ORDER_LIST)
 async def list_orders(
     status_filter: OrderStatus | None = Query(None, alias="status"),
     skip: int = Query(0, ge=0),
@@ -34,6 +37,7 @@ async def list_orders(
     status_code=status.HTTP_201_CREATED,
     summary="Criar novo pedido",
 )
+@invalidates_cache("orders:list:*")
 async def create_new_order(
     order_in: OrderCreate,
     db: AsyncSession = Depends(get_db),
@@ -48,6 +52,7 @@ async def create_new_order(
     response_model=OrderResponse,
     summary="Consultar pedido por ID",
 )
+@cached(prefix="order", ttl=settings.CACHE_TTL_ORDER)
 async def get_order(
     order_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
@@ -67,6 +72,7 @@ async def get_order(
     response_model=OrderResponse,
     summary="Atualizar status do pedido",
 )
+@invalidates_cache("order:{order_id}", "orders:list:*")
 async def patch_order_status(
     order_id: uuid.UUID,
     body: OrderStatusUpdate,

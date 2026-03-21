@@ -13,6 +13,12 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "RS256"
     JWT_PUBLIC_KEY: str = ""
 
+    # Redis / Cache
+    REDIS_URL: str = "redis://redis:6379/0"
+    CACHE_ENABLED: bool = True
+    CACHE_TTL_ORDER: int = 600
+    CACHE_TTL_ORDER_LIST: int = 300
+
     # Service
     SERVICE_NAME: str = "orders-service"
 
