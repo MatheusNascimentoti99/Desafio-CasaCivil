@@ -4,8 +4,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
-from app.models import OrderStatus
-from app.schemas.order_item import OrderItemCreate, OrderItemResponse
+from app.dao import OrderStatus
+from app.dto.order_item import OrderItemCreate, OrderItemResponse
 
 
 class OrderCreate(BaseModel):

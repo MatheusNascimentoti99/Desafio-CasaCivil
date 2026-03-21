@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 from app.database import Base
 
 if TYPE_CHECKING:
-    from app.models.order import Order
+    from app.dao.order import Order
 
 
 class OrderItem(Base):
