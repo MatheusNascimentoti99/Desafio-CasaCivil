@@ -13,12 +13,13 @@ graph TD
     Nginx -->|"/api/auth/*"| Auth["Auth Service :8001"]
     Nginx -->|"/api/orders/*"| Orders["Orders Service :8002"]
 
-    Auth --> AuthDB[("auth_db\nPostgreSQL :5433")]
+    Auth --> AuthDB[("auth_db <br> PostgreSQL :5433")]
+    Auth --> Redis[("Redis <br> DB 0:6379/0  <br>  DB 1:6379/1")]
+    
+    Orders --> OrdersDB[("orders_db <br> PostgreSQL :5434")]
+    Orders --> Redis[("Redis <br> DB 0:6379/0  <br>  DB 1:6379/1")]
 
-    Orders --> Redis[("Redis :6379")]
-    Orders --> OrdersDB[("orders_db\nPostgreSQL :5434")]
-
-    style Redis fill:#dc382c,color:#fff,stroke:#b71c1c
+    style Redis fill:#dc382c,color:#fff,stroke:#b71c1c,stroke-width:3px
     style Nginx fill:#009639,color:#fff
     style Auth fill:#2563eb,color:#fff
     style Orders fill:#2563eb,color:#fff
@@ -33,7 +34,8 @@ graph TD
 | Orders Service | FastAPI + Python 3.12 | 8002 | CRUD de pedidos, filtros por status |
 | Auth DB | PostgreSQL 16 | 5433 | Banco exclusivo do serviço de auth |
 | Orders DB | PostgreSQL 16 | 5434 | Banco exclusivo do serviço de pedidos |
-| Cache | Redis 7 | 6379 | Cache de respostas do Orders Service |
+| Redis DB 0 | Redis 7 | 6379/0 | Cache do Orders Service |
+| Redis DB 1 | Redis 7 | 6379/1 | Cache do Auth Service |
 
 ---
 
