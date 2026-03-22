@@ -15,14 +15,14 @@ class OrderStatus(str, enum.Enum):
 
 
 class OrderItemCreate(BaseModel):
-    product_name: str
+    product_name: str = Field(min_length=2, max_length=255)
     quantity: int = Field(ge=1, default=1)
     unit_price: Decimal = Field(ge=0)
 
 
 class OrderItemResponse(BaseModel):
     id: uuid.UUID
-    product_name: str
+    product_name: str = Field(min_length=2, max_length=255)
     quantity: int
     unit_price: Decimal
 
@@ -30,13 +30,13 @@ class OrderItemResponse(BaseModel):
 
 
 class OrderCreate(BaseModel):
-    customer_name: str
+    customer_name: str = Field(min_length=2, max_length=255)
     items: list[OrderItemCreate] = Field(min_length=1)
 
 
 class OrderResponse(BaseModel):
     id: uuid.UUID
-    customer_name: str
+    customer_name: str = Field(min_length=2, max_length=255)
     status: OrderStatus
     total: Decimal
     user_id: str

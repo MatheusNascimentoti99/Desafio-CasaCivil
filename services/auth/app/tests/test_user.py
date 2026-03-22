@@ -55,8 +55,8 @@ async def test_fetch_user(db: AsyncSession, user_data):
 @pytest.mark.asyncio
 async def test_get_users(db: AsyncSession):
     # Create two users
-    user_in1 = UserCreate(email="alice2@example.com", password="pass123", full_name="Alice2")
-    user_in2 = UserCreate(email="bob2@example.com", password="pass456", full_name="Bob2")
+    user_in1 = UserCreate(email="alice2@example.com", password="pass1234", full_name="Alice2")
+    user_in2 = UserCreate(email="bob2@example.com", password="pass4567", full_name="Bob2")
     await create_user(db, user_in1)
     await create_user(db, user_in2)
 
