@@ -17,7 +17,6 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://redis:6379/0"
     CACHE_ENABLED: bool = True
     CACHE_TTL_ORDER: int = 600
-    CACHE_TTL_ORDER_LIST: int = 300
 
     # Service
     SERVICE_NAME: str = "orders-service"

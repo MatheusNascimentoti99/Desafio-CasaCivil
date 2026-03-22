@@ -19,7 +19,7 @@ router = APIRouter(prefix="/api/orders", tags=["orders"])
     response_model=list[OrderResponse],
     summary="Listar pedidos com filtro opcional por status",
 )
-@cached(prefix="orders:list", ttl=settings.CACHE_TTL_ORDER_LIST)
+@cached(prefix="orders:list", ttl=settings.CACHE_TTL_ORDER)
 async def list_orders(
     status_filter: OrderStatus | None = Query(None, alias="status"),
     skip: int = Query(0, ge=0),

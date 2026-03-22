@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.decorators import cached, invalidates_cache
+from app.config import settings
 
 from app.auth import (
     create_access_token,
@@ -20,6 +22,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
     status_code=status.HTTP_201_CREATED,
     summary="Registrar novo usuário",
 )
+@invalidates_cache("users:list:*")
 async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
     existing = await get_user_by_email(db, user_in.email)
     if existing:
@@ -52,6 +55,7 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
     response_model=list[UserResponse],
     summary="Listar todos os usuários",
 )
+@cached(prefix="users:list", ttl=settings.CACHE_TTL_AUTH)
 async def list_users(
     skip: int = 0,
     limit: int = 100,
@@ -67,5 +71,6 @@ async def list_users(
     response_model=UserResponse,
     summary="Dados do usuário autenticado",
 )
+@cached(prefix="users:me", ttl=settings.CACHE_TTL_AUTH)
 async def read_current_user(current_user: User = Depends(get_current_user)):
     return current_user

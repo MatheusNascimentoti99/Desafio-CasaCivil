@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     JWT_PRIVATE_KEY: str = ""
     JWT_PUBLIC_KEY: str = ""
 
+    # Redis / Cache
+    REDIS_URL: str = "redis://redis:6379/1"
+    CACHE_ENABLED: bool = True
+    CACHE_TTL_AUTH: int = 600
+    
     # Service
     SERVICE_NAME: str = "auth-service"
 
