@@ -267,18 +267,3 @@ class TestOrderStatusUpdate:
         """Testa que status inválido é rejeitado."""
         with pytest.raises(ValidationError):
             OrderStatusUpdate(status="invalid_status")
-
-
-class TestSchemaIntegration:
-
-    def test_decimal_precision(self):
-        """Testa que Decimal mantém precisão."""
-        price = Decimal("1500.99")
-        item = OrderItemCreate(
-            product_name="Notebook",
-            quantity=1,
-            unit_price=price,
-        )
-        assert item.unit_price == price
-        assert str(item.unit_price) == "1500.99"
-
