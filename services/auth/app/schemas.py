@@ -1,20 +1,20 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, StrictStr, StrictBool
 
 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    full_name: str
+    full_name: StrictStr
 
 
 class UserResponse(BaseModel):
     id: uuid.UUID
-    email: str
-    full_name: str
-    is_active: bool
+    email: EmailStr
+    full_name: StrictStr
+    is_active: StrictBool = True
     created_at: datetime
 
     model_config = {"from_attributes": True}
