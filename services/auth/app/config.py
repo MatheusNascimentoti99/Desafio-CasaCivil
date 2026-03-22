@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     AUTH_DB_USER: str = "auth_user"
     AUTH_DB_PASSWORD: str = "auth_pass"
     AUTH_DB_NAME: str = "auth_db"
+    AUTH_DB_HOST: str = "auth-db"
+    AUTH_DB_PORT: int = 5432
 
     # JWT (RS256)
     JWT_ALGORITHM: str = "RS256"
@@ -25,12 +27,11 @@ class Settings(BaseSettings):
 
     @property
     def DATABASE_URL(self) -> str:
-        return f"postgresql+asyncpg://{self.AUTH_DB_USER}:{self.AUTH_DB_PASSWORD}@auth-db:5432/{self.AUTH_DB_NAME}"
+        return f"postgresql+asyncpg://{self.AUTH_DB_USER}:{self.AUTH_DB_PASSWORD}@{self.AUTH_DB_HOST}:{self.AUTH_DB_PORT}/{self.AUTH_DB_NAME}"
 
     @property
     def DATABASE_URL_SYNC(self) -> str:
-        return f"postgresql://{self.AUTH_DB_USER}:{self.AUTH_DB_PASSWORD}@auth-db:5432/{self.AUTH_DB_NAME}"
-
+        return f"postgresql://{self.AUTH_DB_USER}:{self.AUTH_DB_PASSWORD}@{self.AUTH_DB_HOST}:{self.AUTH_DB_PORT}/{self.AUTH_DB_NAME}"
     @property
     def private_key(self) -> str:
         """Decode escaped newlines from env var."""
