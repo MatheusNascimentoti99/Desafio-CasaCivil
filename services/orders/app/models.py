@@ -8,12 +8,18 @@ from sqlalchemy import (
     Numeric,
     Enum as SAEnum,
     func,
+    Integer,
+    ForeignKey,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import TYPE_CHECKING
 
 from app.database import Base
-from app.dao.order_status import OrderStatus
+from app.schemas import OrderStatus
+
+if TYPE_CHECKING:
+    pass
 
 
 class Order(Base):
@@ -42,3 +48,19 @@ class Order(Base):
     items: Mapped[list["OrderItem"]] = relationship(
         back_populates="order", cascade="all, delete-orphan", lazy="selectin"
     )
+
+
+class OrderItem(Base):
+    __tablename__ = "order_items"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    order_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"), nullable=False
+    )
+    product_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    unit_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+
+    order: Mapped["Order"] = relationship(back_populates="items")

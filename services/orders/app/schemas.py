@@ -1,11 +1,32 @@
 import uuid
 from datetime import datetime
 from decimal import Decimal
+import enum
 
 from pydantic import BaseModel, Field
 
-from app.dao import OrderStatus
-from app.dto.order_item import OrderItemCreate, OrderItemResponse
+
+class OrderStatus(str, enum.Enum):
+    PENDING = "pending"
+    CONFIRMED = "confirmed"
+    SHIPPED = "shipped"
+    DELIVERED = "delivered"
+    CANCELLED = "cancelled"
+
+
+class OrderItemCreate(BaseModel):
+    product_name: str
+    quantity: int = Field(ge=1, default=1)
+    unit_price: Decimal = Field(ge=0)
+
+
+class OrderItemResponse(BaseModel):
+    id: uuid.UUID
+    product_name: str
+    quantity: int
+    unit_price: Decimal
+
+    model_config = {"from_attributes": True}
 
 
 class OrderCreate(BaseModel):

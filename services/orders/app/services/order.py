@@ -4,8 +4,8 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dao import Order, OrderItem, OrderStatus
-from app.dto import OrderCreate
+from app.models import Order, OrderItem, OrderStatus
+from app.schemas import OrderCreate
 
 
 async def get_orders(

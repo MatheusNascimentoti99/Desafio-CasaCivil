@@ -8,8 +8,8 @@ from app.decorators import cached, invalidates_cache
 from app.config import settings
 from app.services import create_order, get_order_by_id, get_orders, update_order_status
 from app.database import get_db
-from app.dao import OrderStatus
-from app.dto import OrderCreate, OrderResponse, OrderStatusUpdate
+from app.models import OrderStatus
+from app.schemas import OrderCreate, OrderResponse, OrderStatusUpdate
 
 router = APIRouter(prefix="/api/orders", tags=["orders"])
 
