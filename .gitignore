@@ -32,3 +32,8 @@ postgres_data/
 # OS
 .DS_Store
 Thumbs.db
+
+
+# Node_modules
+node_modules/
+.ruler/
