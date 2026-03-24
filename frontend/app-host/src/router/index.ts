@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AuthLayout from '@/components/AuthLayout.vue'
 import HomePage from '@/pages/HomePage.vue'
 import LoginPage from '@/pages/LoginPage.vue'
+import OrdersRemotePage from '@/pages/OrdersRemotePage.vue'
 import RegisterPage from '@/pages/RegisterPage.vue'
 
 const router = createRouter({
@@ -11,6 +12,12 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomePage,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/orders',
+      name: 'orders',
+      component: OrdersRemotePage,
       meta: { requiresAuth: true },
     },
     {

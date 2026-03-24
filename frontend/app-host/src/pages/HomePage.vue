@@ -52,6 +52,7 @@ onMounted(loadUser)
       </div>
 
       <div class="home-actions">
+        <RouterLink class="orders-link" :to="{ name: 'orders' }">Abrir módulo de pedidos</RouterLink>
         <BrButton @click="logout">Sair</BrButton>
       </div>
     </section>
@@ -76,6 +77,14 @@ onMounted(loadUser)
 
 .home-actions {
   margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.orders-link {
+  color: #1351b4;
+  font-weight: 600;
 }
 
 .home-error {

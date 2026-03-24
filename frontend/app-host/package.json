@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
-    "test:e2e": "playwright test",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint": "run-s lint:*",
@@ -23,7 +22,7 @@
     "vue-router": "^5.0.3"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
+    "@originjs/vite-plugin-federation": "^1.4.1",
     "@stencil/vue-output-target": "^0.13.1",
     "@tsconfig/node24": "^24.0.4",
     "@types/node": "^24.12.0",
