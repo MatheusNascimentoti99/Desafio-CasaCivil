@@ -1,50 +1,50 @@
 {
-  "name": "app-host",
+  "name": "e-ccc",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
-  "version": "0.0.0",
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
+    "test:e2e": "playwright test",
     "build-only": "vite build",
-    "type-check": "vue-tsc --build --force",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
-    "mcp": "ruler apply",
-    "mcp:revert": "ruler revert"
+    "type-check": "vue-tsc --build",
+    "lint": "run-s lint:*",
+    "lint:oxlint": "oxlint . --fix",
+    "lint:eslint": "eslint . --fix --cache",
+    "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
-    "@fontsource/roboto": "^5.2.10",
-    "@fontsource/roboto-mono": "^5.2.8",
-    "@mdi/font": "7.4.47",
+    "@govbr-ds/core": "^3.7.0",
+    "@govbr-ds/webcomponents": "^2.0.0-next.64",
+    "@govbr-ds/webcomponents-vue": "^2.0.0-next.64",
     "vue": "^3.5.30",
-    "vuetify": "^4.0.2",
-    "vue-i18n": "^11.3.0",
     "vue-router": "^5.0.3"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.2.1",
-    "@tsconfig/node22": "^22.0.5",
+    "@playwright/test": "^1.58.2",
+    "@stencil/vue-output-target": "^0.13.1",
+    "@tsconfig/node24": "^24.0.4",
     "@types/node": "^24.12.0",
-    "@vitejs/plugin-vue": "^6.0.5",
+    "@vitejs/plugin-vue": "^6.0.4",
+    "@vue/eslint-config-typescript": "^14.7.0",
     "@vue/tsconfig": "^0.9.0",
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-oxlint": "~1.51.0",
+    "eslint-plugin-playwright": "^2.9.0",
+    "eslint-plugin-vue": "~10.8.0",
+    "jiti": "^2.6.1",
     "npm-run-all2": "^8.0.4",
-    "sass-embedded": "^1.98.0",
-    "tailwindcss": "^4.2.1",
+    "oxlint": "~1.51.0",
+    "prettier": "3.8.1",
     "typescript": "~5.9.3",
-    "unplugin-fonts": "^1.4.0",
-    "vite": "^8.0.0",
-    "vite-plugin-vuetify": "^2.1.3",
-    "vue-tsc": "^3.2.5",
-    "eslint": "^9.39.4",
-    "eslint-config-vuetify": "^4.3.4",
-    "@intellectronica/ruler": "^0.3.37"
+    "vite": "^7.3.1",
+    "vite-plugin-vue-devtools": "^8.0.7",
+    "vue-tsc": "^3.2.5"
   },
-  "overrides": {
-    "unplugin-fonts": {
-      "vite": "^8.0.0"
-    }
-  },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
 }

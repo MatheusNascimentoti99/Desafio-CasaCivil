@@ -1,83 +1,67 @@
-# app-host
+# e-ccc
 
-Scaffolded with Vuetify CLI.
+This template should help get you started developing with Vue 3 in Vite.
 
-## ❗️ Documentation
+## Recommended IDE Setup
 
-- Primary docs: https://vuetifyjs.com/
-- Getting started guide: https://vuetifyjs.com/en/getting-started/installation/
-- Community support: https://community.vuetifyjs.com/
-- Issue tracker: https://issues.vuetifyjs.com/
+[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
 
-## 🧱 Stack
+## Recommended Browser Setup
 
-- Framework: Vue 3 + Vite
-- UI Library: Vuetify
-- Language: TypeScript
-- Package manager: yarn
+- Chromium-based browsers (Chrome, Edge, Brave, etc.):
+  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
+  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
+- Firefox:
+  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
+  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
 
-## 🧭 Start Here
+## Type Support for `.vue` Imports in TS
 
-- Main entry: `src/main.ts`
-- Main app component: `src/App.vue`
-- Main styles: `src/styles/`
-- Plugin setup: `src/plugins/`
+TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
 
-## 📁 Project Structure
+## Customize configuration
 
-- `src/main.ts` — application entry point
-- `src/App.vue` — root component
-- `src/components/` — reusable Vue components
-- `src/plugins/` — plugin registration and setup
-- `src/styles/` — global styles and theme settings
-- `public/` — static public files
+See [Vite Configuration Reference](https://vite.dev/config/).
 
-## ✨ Enabled Features
+## Project Setup
 
-- ESLint
-- Vuetify MCP
-- Vue I18n
-- Vue Router
-- Tailwind CSS
-
-## 💿 Install
-
-Use your selected package manager (yarn) to install dependencies:
-
-```bash
-yarn install
+```sh
+yarn
 ```
 
-## 🚀 Quick Start
+### Compile and Hot-Reload for Development
 
-```bash
-yarn install
+```sh
 yarn dev
 ```
 
-## 🏗️ Build
+### Type-Check, Compile and Minify for Production
 
-```bash
+```sh
 yarn build
 ```
 
-## 🧪 Available Scripts
+### Run End-to-End Tests with [Playwright](https://playwright.dev)
 
-- `yarn dev`
-- `yarn build`
-- `yarn preview`
-- `yarn build-only`
-- `yarn type-check`
-- `yarn lint`
-- `yarn lint:fix`
-- `yarn mcp`
-- `yarn mcp:revert`
+```sh
+# Install browsers for the first run
+npx playwright install
 
-## 💪 Support Vuetify Development
+# When testing on CI, must build the project first
+yarn build
 
-This project uses Vuetify - an MIT licensed Open Source project. We are glad to welcome contributors and any support for ongoing development:
+# Runs the end-to-end tests
+yarn test:e2e
+# Runs the tests only on Chromium
+yarn test:e2e --project=chromium
+# Runs the tests of a specific file
+yarn test:e2e tests/example.spec.ts
+# Runs the tests in debug mode
+yarn test:e2e --debug
+```
 
-- Contribute to Vuetify and ecosystem projects: https://github.com/vuetifyjs
-- Request enterprise support: https://support.vuetifyjs.com/
-- Sponsor on GitHub: https://github.com/sponsors/vuetifyjs
-- Support on Open Collective: https://opencollective.com/vuetify
+### Lint with [ESLint](https://eslint.org/)
+
+```sh
+yarn lint
+```
