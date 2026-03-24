@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import AuthLayout from '@/components/AuthLayout.vue'
 import HomePage from '@/pages/HomePage.vue'
 import LoginPage from '@/pages/LoginPage.vue'
 import RegisterPage from '@/pages/RegisterPage.vue'
@@ -13,16 +14,23 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: '/login',
-      name: 'login',
-      component: LoginPage,
+      path: '/auth',
+      component: AuthLayout,
       meta: { guestOnly: true },
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: RegisterPage,
-      meta: { guestOnly: true },
+      children: [
+        {
+          path: 'login',
+          alias: '/login',
+          name: 'login',
+          component: LoginPage,
+        },
+        {
+          path: 'register',
+          alias: '/register',
+          name: 'register',
+          component: RegisterPage,
+        },
+      ],
     },
   ],
 })

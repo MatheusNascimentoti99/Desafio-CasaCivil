@@ -36,12 +36,11 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <main class="auth-page">
-    <section class="auth-card">
-      <h1>Entrar</h1>
-      <p class="auth-subtitle">Acesse a plataforma de pedidos</p>
+  <div>
+    <h1>Entrar</h1>
+    <p class="auth-subtitle">Acesse a plataforma de pedidos</p>
 
-      <form class="auth-form" @submit.prevent="handleSubmit">
+    <form class="auth-form" @submit.prevent="handleSubmit">
         <BrInput
           v-model="form.email"
           label="E-mail"
@@ -63,32 +62,16 @@ async function handleSubmit() {
         <BrButton type="submit" :disabled="loading">
           {{ loading ? 'Entrando...' : 'Entrar' }}
         </BrButton>
-      </form>
+    </form>
 
-      <p class="auth-footer">
+    <p class="auth-footer">
         Ainda não tem conta?
-        <RouterLink to="/register">Criar cadastro</RouterLink>
-      </p>
-    </section>
-  </main>
+        <RouterLink :to="{ name: 'register' }">Criar cadastro</RouterLink>
+    </p>
+  </div>
 </template>
 
 <style scoped>
-.auth-page {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 1.5rem;
-}
-
-.auth-card {
-  width: min(100%, 420px);
-  border: 1px solid var(--gray-20, #d9d9d9);
-  border-radius: 12px;
-  padding: 1.5rem;
-  background: #fff;
-}
-
 .auth-subtitle {
   margin-top: 0.25rem;
   color: #555;
