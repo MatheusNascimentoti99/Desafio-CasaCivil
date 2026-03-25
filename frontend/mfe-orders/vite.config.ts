@@ -9,7 +9,7 @@ export default defineConfig({
       name: 'orders',
       filename: 'remoteEntry.js',
       exposes: {
-        './OrdersApp': './src/OrdersApp.vue',
+        './OrdersApp': './src/pages/OrdersApp.vue',
       },
       shared: ['vue'],
     }),

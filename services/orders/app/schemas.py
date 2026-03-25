@@ -3,28 +3,28 @@ from datetime import datetime
 from decimal import Decimal
 import enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PositiveFloat
 
 
 class OrderStatus(str, enum.Enum):
-    PENDING = "pending"
-    CONFIRMED = "confirmed"
-    SHIPPED = "shipped"
-    DELIVERED = "delivered"
-    CANCELLED = "cancelled"
+    PENDING = "pendente"
+    CONFIRMED = "confirmado"
+    SHIPPED = "enviado"
+    DELIVERED = "entregue"
+    CANCELLED = "cancelado"
 
 
 class OrderItemCreate(BaseModel):
     product_name: str = Field(min_length=2, max_length=255)
     quantity: int = Field(ge=1, default=1)
-    unit_price: Decimal = Field(ge=0)
+    unit_price: Decimal = Field(gt=0)
 
 
 class OrderItemResponse(BaseModel):
     id: uuid.UUID
     product_name: str = Field(min_length=2, max_length=255)
     quantity: int
-    unit_price: Decimal
+    unit_price: PositiveFloat
 
     model_config = {"from_attributes": True}
 

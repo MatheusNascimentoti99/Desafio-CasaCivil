@@ -55,6 +55,7 @@ async function handleSubmit() {
           name="password"
           placeholder="Mínimo 8 caracteres"
           type="password"
+          auto-complete="current-password"
         />
 
         <p v-if="errorMessage" class="auth-error">{{ errorMessage }}</p>

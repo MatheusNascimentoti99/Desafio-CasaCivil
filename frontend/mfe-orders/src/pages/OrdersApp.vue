@@ -1,47 +1,30 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-
-interface OrderItem {
-  product_name: string
-  quantity: number
-  unit_price: number
-}
-
-interface Order {
-  id: string
-  customer_name: string
-  status: string
-  total_amount?: number
-  items?: OrderItem[]
-}
+import OrderCreate from './OrderCreate.vue'
+import { listOrders } from '../services'
+import type { Order } from '../types/order'
 
 const loading = ref(false)
 const errorMessage = ref('')
 const orders = ref<Order[]>([])
+const activeView = ref<'list' | 'create'>('list')
 
 async function loadOrders() {
   loading.value = true
   errorMessage.value = ''
 
   try {
-    const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
-    const token = localStorage.getItem('auth_token')
-
-    const response = await fetch(`${baseUrl}/api/orders/`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({}))
-      throw new Error(body?.detail ?? 'Não foi possível carregar pedidos')
-    }
-
-    orders.value = (await response.json()) as Order[]
+    orders.value = await listOrders()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : 'Erro ao carregar pedidos'
   } finally {
     loading.value = false
   }
+}
+
+async function handleOrderCreated() {
+  activeView.value = 'list'
+  await loadOrders()
 }
 
 onMounted(loadOrders)
@@ -51,16 +34,34 @@ onMounted(loadOrders)
   <div class="orders-app">
     <header class="orders-header">
       <h2>Pedidos (MFE)</h2>
-      <button class="refresh-btn" type="button" @click="loadOrders">Atualizar</button>
+      <div class="actions">
+        <button class="refresh-btn" type="button" @click="loadOrders">Atualizar</button>
+        <button
+          class="create-btn"
+          type="button"
+          @click="activeView = activeView === 'list' ? 'create' : 'list'"
+        >
+          {{ activeView === 'list' ? 'Novo pedido' : 'Ver pedidos' }}
+        </button>
+      </div>
     </header>
 
-    <p v-if="loading">Carregando pedidos...</p>
+    <OrderCreate v-if="activeView === 'create'" @created="handleOrderCreated" />
+
+    <p v-else-if="loading">Carregando pedidos...</p>
     <p v-else-if="errorMessage" class="error">{{ errorMessage }}</p>
 
     <ul v-else class="orders-list">
       <li v-for="order in orders" :key="order.id" class="order-card">
         <div><strong>Cliente:</strong> {{ order.customer_name }}</div>
         <div><strong>Status:</strong> {{ order.status }}</div>
+        <div><strong>Itens:</strong>
+          <ul class="items-list">
+            <li v-for="(item, index) in order.items" :key="index">
+              {{ item.product_name }} - Quantidade: {{ item.quantity }} - Preço unitário: R$ {{ item.unit_price.toFixed(2) }}
+            </li>
+          </ul>
+        </div>
       </li>
       <li v-if="orders.length === 0" class="empty">Nenhum pedido encontrado.</li>
     </ul>
@@ -82,9 +83,23 @@ onMounted(loadOrders)
   gap: 1rem;
 }
 
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .refresh-btn {
   border: 1px solid #c7c7c7;
   background: #f5f5f5;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.create-btn {
+  border: 1px solid #0c6cf2;
+  background: #0c6cf2;
+  color: #fff;
   padding: 0.4rem 0.8rem;
   border-radius: 6px;
   cursor: pointer;

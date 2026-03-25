@@ -118,6 +118,8 @@ services:
     build:
       context: ./frontend/app-host
       dockerfile: ../Dockerfile
+      args:
+        VITE_ORDERS_MFE_URL: ${VITE_ORDERS_MFE_URL:-http://localhost:3001/assets/remoteEntry.js}
     container_name: app-host
     ports:
       - "${APP_HOST_PORT:-3000}:80"
@@ -134,6 +136,8 @@ services:
     container_name: mfe-orders
     ports:
       - "${MFE_ORDERS_PORT:-3001}:80"
+    volumes:
+      - ./frontend/mfe-orders/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - nginx
     networks:
