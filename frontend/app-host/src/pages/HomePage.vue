@@ -31,11 +31,6 @@ async function loadUser() {
   }
 }
 
-function logout() {
-  localStorage.removeItem('auth_token')
-  router.push({ name: 'login' })
-}
-
 onMounted(loadUser)
 </script>
 
@@ -53,7 +48,6 @@ onMounted(loadUser)
 
       <div class="home-actions">
         <RouterLink class="orders-link" :to="{ name: 'orders' }">Abrir módulo de pedidos</RouterLink>
-        <BrButton @click="logout">Sair</BrButton>
       </div>
     </section>
   </main>

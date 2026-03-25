@@ -2,23 +2,31 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AuthLayout from '@/components/AuthLayout.vue'
 import HomePage from '@/pages/HomePage.vue'
 import LoginPage from '@/pages/LoginPage.vue'
-import OrdersRemotePage from '@/pages/OrdersRemotePage.vue'
 import RegisterPage from '@/pages/RegisterPage.vue'
+import MainLayout from '@/components/MainLayout.vue'
+import { defineAsyncComponent } from 'vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomePage,
+      component: MainLayout,
       meta: { requiresAuth: true },
-    },
-    {
-      path: '/orders',
-      name: 'orders',
-      component: OrdersRemotePage,
-      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          name: 'home',
+          component: HomePage,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: '/orders',
+          name: 'orders',
+          component: defineAsyncComponent(() => import('orders/OrdersList')),
+          meta: { requiresAuth: true },
+        }
+      ]
     },
     {
       path: '/auth',
@@ -39,6 +47,11 @@ const router = createRouter({
         },
       ],
     },
+    // Redirect any unknown route to home
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: { name: 'home' }
+    }
   ],
 })
 
