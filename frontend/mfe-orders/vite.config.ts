@@ -17,5 +17,11 @@ export default defineConfig({
   build: {
     target: 'esnext',
     minify: false,
+    rollupOptions: {
+      external: ['stream', 'util'],
+    },
+  },
+  ssr: {
+    external: ['stream', 'util'],
   },
 })

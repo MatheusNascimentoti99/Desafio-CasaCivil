@@ -112,6 +112,35 @@ services:
     restart: unless-stopped
 
   # ══════════════════════════════════════════════════════════════
+  # FRONTENDS
+  # ══════════════════════════════════════════════════════════════
+  app-host:
+    build:
+      context: ./frontend/app-host
+      dockerfile: ../Dockerfile
+    container_name: app-host
+    ports:
+      - "${APP_HOST_PORT:-3000}:80"
+    depends_on:
+      - nginx
+    networks:
+      - frontend
+    restart: unless-stopped
+
+  mfe-orders:
+    build:
+      context: ./frontend/mfe-orders
+      dockerfile: ../Dockerfile
+    container_name: mfe-orders
+    ports:
+      - "${MFE_ORDERS_PORT:-3001}:80"
+    depends_on:
+      - nginx
+    networks:
+      - frontend
+    restart: unless-stopped
+
+  # ══════════════════════════════════════════════════════════════
   # API GATEWAY
   # ══════════════════════════════════════════════════════════════
   nginx:
@@ -135,4 +164,6 @@ volumes:
 
 networks:
   backend:
+    driver: bridge
+  frontend:
     driver: bridge
