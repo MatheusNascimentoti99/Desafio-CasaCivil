@@ -4,16 +4,36 @@ on:
   push
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      auth: ${{ steps.filter.outputs.auth }}
+      orders: ${{ steps.filter.outputs.orders }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            auth:
+              - 'services/auth/**'
+            orders:
+              - 'services/orders/**'
+
   test:
+    needs: changes
+    if: ${{ needs.changes.outputs[matrix.service_key] == 'true' }}
     name: test (${{ matrix.service }})
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: true
       matrix:
-        service:
-          - services/auth
-          - services/orders
+        include:
+          - service: services/auth
+            service_key: auth
+          - service: services/orders
+            service_key: orders
 
     defaults:
       run:
