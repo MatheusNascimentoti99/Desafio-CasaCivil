@@ -38,3 +38,6 @@ jobs:
 
       - name: Run tests
         run: pytest --tb=short -q
+        env:
+          JWT_PRIVATE_KEY: ${{ matrix.service == 'services/auth' && secrets.JWT_PRIVATE_KEY || '' }}
+          JWT_PUBLIC_KEY:  ${{ matrix.service == 'services/auth' && secrets.JWT_PUBLIC_KEY  || '' }}
