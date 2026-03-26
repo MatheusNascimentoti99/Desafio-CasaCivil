@@ -69,7 +69,7 @@ async function submitOrder() {
     resetForm()
     emit('created')
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : 'Erro ao criar pedido'
+    errorMessage.value = "Erro ao criar pedido. Verifique os dados e tente novamente."
   } finally {
     loading.value = false
   }
@@ -103,6 +103,7 @@ async function submitOrder() {
             required
             variant="outlined"
             placeholder="Nome do produto"
+            hideDetails="auto"
           />
 
           <v-text-field
@@ -113,6 +114,7 @@ async function submitOrder() {
             step="1"
             required
             variant="outlined"
+            hideDetails="auto"
           />
 
           <v-text-field
@@ -123,6 +125,7 @@ async function submitOrder() {
             step="0.01"
             required
             variant="outlined"
+            hideDetails="auto"
             prefix="R$"
           />
 
@@ -163,7 +166,7 @@ async function submitOrder() {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 120px 160px auto;
   gap: 0.5rem;
-  align-items: end;
+  align-items: center;
 }
 
 @media (max-width: 900px) {

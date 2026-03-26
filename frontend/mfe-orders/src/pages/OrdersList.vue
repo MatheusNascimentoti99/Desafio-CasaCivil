@@ -13,6 +13,41 @@ const pageSize = 5
 const hasNextPage = ref(false)
 const hasPreviousPage = computed(() => currentPage.value > 1)
 
+const currencyFormatter = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+})
+
+function formatCurrency(value: number | undefined) {
+  return currencyFormatter.format(value ?? 0)
+}
+
+function statusColor(status: string) {
+  const normalized = status.toLowerCase()
+
+  if (normalized === 'completed' || normalized === 'paid') {
+    return 'success'
+  }
+
+  if (normalized === 'pending') {
+    return 'warning'
+  }
+
+  if (normalized === 'cancelled' || normalized === 'canceled') {
+    return 'error'
+  }
+
+  return 'info'
+}
+
+function orderTotal(order: Order) {
+  if (typeof order.total === 'number') {
+    return order.total
+  }
+
+  return order.items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0)
+}
+
 async function loadOrders() {
   loading.value = true
   errorMessage.value = ''
@@ -65,10 +100,14 @@ onMounted(loadOrders)
   <v-container fluid class="pa-0">
     <v-card>
       <v-card-title class="d-flex justify-space-between align-center">
-        <span>Pedidos (MFE)</span>
+        <div class="d-flex align-center ga-2">
+          <v-icon icon="mdi-package-variant-closed" color="primary" />
+          <span>Pedidos (MFE)</span>
+        </div>
         <div class="d-flex ga-2">
-          <v-btn variant="outlined" @click="refreshOrders">Atualizar</v-btn>
+          <v-btn variant="outlined" prepend-icon="mdi-refresh" @click="refreshOrders">Atualizar</v-btn>
           <v-btn color="primary" @click="activeView = activeView === 'list' ? 'create' : 'list'">
+            <v-icon start :icon="activeView === 'list' ? 'mdi-plus-circle-outline' : 'mdi-format-list-bulleted'" />
             {{ activeView === 'list' ? 'Novo pedido' : 'Ver pedidos' }}
           </v-btn>
         </div>
@@ -89,18 +128,50 @@ onMounted(loadOrders)
         <template v-else>
           <v-row>
             <v-col v-for="order in orders" :key="order.id" cols="12">
-              <v-card variant="outlined">
-                <v-card-text>
-                  <div><strong>Cliente:</strong> {{ order.customer_name }}</div>
-                  <div><strong>Status:</strong> {{ order.status }}</div>
-                  <div>
-                    <strong>Itens:</strong>
-                    <ul class="items-list">
-                      <li v-for="(item, index) in order.items" :key="index">
-                        {{ item.product_name }} - Quantidade: {{ item.quantity }} - Preço unitário: R$ {{ item.unit_price.toFixed(2) }}
-                      </li>
-                    </ul>
+              <v-card variant="outlined" class="order-card">
+                <v-card-title class="d-flex justify-space-between align-center pb-1">
+                  <div class="d-flex align-center ga-2">
+                    <v-icon icon="mdi-account-circle-outline" color="primary" />
+                    <span>{{ order.customer_name }}</span>
                   </div>
+                  <v-chip size="small" :color="statusColor(order.status)" variant="tonal">
+                    <v-icon start icon="mdi-progress-clock" />
+                    {{ order.status }}
+                  </v-chip>
+                </v-card-title>
+
+                <v-card-text>
+                  <div class="d-flex align-center ga-2 mb-3 text-medium-emphasis">
+                    <v-icon icon="mdi-cash-multiple" size="18" />
+                    <span>Total: <strong>{{ formatCurrency(orderTotal(order)) }}</strong></span>
+                  </div>
+
+                  <div class="d-flex align-center ga-2 mb-2">
+                    <v-icon icon="mdi-format-list-bulleted-square" size="18" color="primary" />
+                    <strong>Itens</strong>
+                  </div>
+
+                  <v-list class="py-0" density="compact" bg-color="transparent">
+                    <v-list-item
+                      v-for="(item, index) in order.items"
+                      :key="index"
+                      class="item-row"
+                      rounded="lg"
+                    >
+                      <template #prepend>
+                        <v-icon icon="mdi-cube-outline" size="18" class="mr-2" />
+                      </template>
+
+                      <v-list-item-title class="item-title">{{ item.product_name }}</v-list-item-title>
+                      <v-list-item-subtitle>
+                        <v-icon icon="mdi-counter" size="14" class="mr-1" />
+                        {{ item.quantity }}
+                        <span class="mx-1">•</span>
+                        <v-icon icon="mdi-currency-brl" size="14" class="mr-1" />
+                        {{ formatCurrency(item.unit_price) }}
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                  </v-list>
                 </v-card-text>
               </v-card>
             </v-col>
@@ -111,11 +182,11 @@ onMounted(loadOrders)
           </v-alert>
 
           <div class="pagination">
-            <v-btn variant="outlined" :disabled="!hasPreviousPage" @click="goToPreviousPage">
+            <v-btn variant="outlined" prepend-icon="mdi-chevron-left" :disabled="!hasPreviousPage" @click="goToPreviousPage">
               Anterior
             </v-btn>
             <span>Página {{ currentPage }}</span>
-            <v-btn color="primary" :disabled="!hasNextPage" @click="goToNextPage">
+            <v-btn color="primary" append-icon="mdi-chevron-right" :disabled="!hasNextPage" @click="goToNextPage">
               Próxima
             </v-btn>
           </div>
@@ -140,8 +211,16 @@ onMounted(loadOrders)
   gap: 0.75rem;
 }
 
-.items-list {
-  margin: 0.5rem 0 0;
-  padding-left: 1rem;
+.order-card {
+  border-left: 4px solid rgb(var(--v-theme-primary));
+}
+
+.item-row {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  margin-bottom: 0.4rem;
+}
+
+.item-title {
+  font-weight: 500;
 }
 </style>
