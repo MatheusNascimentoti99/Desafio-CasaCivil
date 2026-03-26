@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import OrderCreate from './OrderCreate.vue'
 import { listOrders } from '../services'
 import type { Order } from '../types/order'
@@ -8,22 +8,53 @@ const loading = ref(false)
 const errorMessage = ref('')
 const orders = ref<Order[]>([])
 const activeView = ref<'list' | 'create'>('list')
+const currentPage = ref(1)
+const pageSize = 5
+const hasNextPage = ref(false)
+const hasPreviousPage = computed(() => currentPage.value > 1)
 
 async function loadOrders() {
   loading.value = true
   errorMessage.value = ''
 
   try {
-    orders.value = await listOrders()
+    const skip = (currentPage.value - 1) * pageSize
+    const results = await listOrders({ skip, limit: pageSize + 1 })
+    hasNextPage.value = results.length > pageSize
+    orders.value = hasNextPage.value ? results.slice(0, pageSize) : results
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : 'Erro ao carregar pedidos'
+    hasNextPage.value = false
   } finally {
     loading.value = false
   }
 }
 
+async function goToNextPage() {
+  if (!hasNextPage.value || loading.value) {
+    return
+  }
+
+  currentPage.value += 1
+  await loadOrders()
+}
+
+async function goToPreviousPage() {
+  if (!hasPreviousPage.value || loading.value) {
+    return
+  }
+
+  currentPage.value -= 1
+  await loadOrders()
+}
+
+async function refreshOrders() {
+  await loadOrders()
+}
+
 async function handleOrderCreated() {
   activeView.value = 'list'
+  currentPage.value = 1
   await loadOrders()
 }
 
@@ -35,7 +66,7 @@ onMounted(loadOrders)
     <header class="orders-header">
       <h2>Pedidos (MFE)</h2>
       <div class="actions">
-        <button class="refresh-btn" type="button" @click="loadOrders">Atualizar</button>
+        <button class="refresh-btn" type="button" @click="refreshOrders">Atualizar</button>
         <button
           class="create-btn"
           type="button"
@@ -65,6 +96,16 @@ onMounted(loadOrders)
       </li>
       <li v-if="orders.length === 0" class="empty">Nenhum pedido encontrado.</li>
     </ul>
+
+    <div v-if="activeView === 'list' && !loading && !errorMessage" class="pagination">
+      <button type="button" class="page-btn" :disabled="!hasPreviousPage" @click="goToPreviousPage">
+        Anterior
+      </button>
+      <span class="page-indicator">Página {{ currentPage }}</span>
+      <button type="button" class="page-btn" :disabled="!hasNextPage" @click="goToNextPage">
+        Próxima
+      </button>
+    </div>
   </div>
 </template>
 
@@ -125,5 +166,32 @@ onMounted(loadOrders)
 
 .empty {
   color: #666;
+}
+
+.pagination {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.page-btn {
+  border: 1px solid #d0d0d0;
+  background: #fff;
+  color: #1f2937;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-indicator {
+  color: #374151;
+  font-size: 0.95rem;
 }
 </style>

@@ -1,8 +1,17 @@
 import type { CreateOrderPayload, Order } from '../types/order'
 import { buildUrl, getAuthHeaders, parseError } from './auth'
 
-export async function listOrders(): Promise<Order[]> {
-  const response = await fetch(buildUrl('/api/orders/'), {
+export interface ListOrdersParams {
+  skip?: number
+  limit?: number
+}
+
+export async function listOrders(params: ListOrdersParams = {}): Promise<Order[]> {
+  const requestUrl = new URL(buildUrl('/api/orders/'))
+  requestUrl.searchParams.set('skip', String(params.skip ?? 0))
+  requestUrl.searchParams.set('limit', String(params.limit ?? 50))
+
+  const response = await fetch(requestUrl.toString(), {
     headers: {
       ...getAuthHeaders(),
     },
