@@ -4,12 +4,17 @@ import { buildUrl, getAuthHeaders, parseError } from './auth'
 export interface ListOrdersParams {
   skip?: number
   limit?: number
+  status?: OrderStatus
 }
 
 export async function listOrders(params: ListOrdersParams = {}): Promise<Order[]> {
   const requestUrl = new URL(buildUrl('/api/orders/'))
   requestUrl.searchParams.set('skip', String(params.skip ?? 0))
   requestUrl.searchParams.set('limit', String(params.limit ?? 50))
+
+  if (params.status) {
+    requestUrl.searchParams.set('status', params.status)
+  }
 
   const response = await fetch(requestUrl.toString(), {
     headers: {

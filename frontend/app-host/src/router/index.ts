@@ -15,7 +15,8 @@ const router = createRouter({
       meta: { requiresAuth: true },
       children: [
         {
-          path: '',
+          path: '/home',
+          alias: '',
           name: 'home',
           component: HomePage,
           meta: { requiresAuth: true },
@@ -24,6 +25,12 @@ const router = createRouter({
           path: '/orders',
           name: 'orders',
           component: defineAsyncComponent(() => import('orders/OrdersList')),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: '/orders/create',
+          name: 'order-create',
+          component: defineAsyncComponent(() => import('orders/OrderCreate')),
           meta: { requiresAuth: true },
         }
       ]

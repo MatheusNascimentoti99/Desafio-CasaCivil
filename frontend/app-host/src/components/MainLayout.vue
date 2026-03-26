@@ -2,12 +2,14 @@
   <v-app-bar color="primary" density="comfortable">
     <v-app-bar-title>E-cCC</v-app-bar-title>
     <v-btn variant="text" :to="{ name: 'home' }">Home</v-btn>
+    <v-btn variant="text">Usuários</v-btn>
     <v-btn variant="text" :to="{ name: 'orders' }">Orders</v-btn>
-    <v-btn flat color="white" @click="logout">Logout</v-btn>
+    <v-spacer />
+    <v-btn flat color="white" @click="logout" title="Logout" icon="mdi-logout"/>
   </v-app-bar>
 
-  <v-main>
-    <RouterView />
+  <v-main class="ma-3">
+      <RouterView />
   </v-main>
 </template>
 
@@ -21,3 +23,5 @@ function logout() {
   router.push({ name: 'login' })
 }
 </script>
+<style scoped>
+</style>

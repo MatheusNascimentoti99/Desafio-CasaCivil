@@ -10,8 +10,9 @@ export default defineConfig({
       filename: 'remoteEntry.js',
       exposes: {
         './OrdersList': './src/pages/OrdersList.vue',
+        './OrderCreate': './src/pages/OrderCreate.vue',
       },
-      shared: ['vue', 'vuetify'],
+      shared: ['vue', 'vuetify', 'vue-router'],
     }),
   ],
   build: {

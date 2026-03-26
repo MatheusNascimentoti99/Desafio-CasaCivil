@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import OrderCreate from './OrderCreate.vue'
 import { listOrders, updateOrderStatus } from '../services'
 import type { Order, OrderStatus } from '../types/order'
 
@@ -9,11 +8,19 @@ const updatingOrderId = ref<string | null>(null)
 const errorMessage = ref('')
 const actionErrorMessage = ref('')
 const orders = ref<Order[]>([])
-const activeView = ref<'list' | 'create'>('list')
 const currentPage = ref(1)
 const pageSize = 5
 const hasNextPage = ref(false)
 const hasPreviousPage = computed(() => currentPage.value > 1)
+const selectedStatus = ref<OrderStatus | null>(null)
+
+const statusOptions: Array<{ label: string; value: OrderStatus }> = [
+  { label: 'Pendente', value: 'pendente' },
+  { label: 'Confirmado', value: 'confirmado' },
+  { label: 'Enviado', value: 'enviado' },
+  { label: 'Entregue', value: 'entregue' },
+  { label: 'Cancelado', value: 'cancelado' },
+]
 
 const currencyFormatter = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
@@ -111,7 +118,11 @@ async function loadOrders() {
 
   try {
     const skip = (currentPage.value - 1) * pageSize
-    const results = await listOrders({ skip, limit: pageSize + 1 })
+    const results = await listOrders({
+      skip,
+      limit: pageSize + 1,
+      status: selectedStatus.value ?? undefined,
+    })
     hasNextPage.value = results.length > pageSize
     orders.value = hasNextPage.value ? results.slice(0, pageSize) : results
   } catch (error) {
@@ -144,8 +155,8 @@ async function refreshOrders() {
   await loadOrders()
 }
 
-async function handleOrderCreated() {
-  activeView.value = 'list'
+async function applyStatusFilter(status: OrderStatus | null) {
+  selectedStatus.value = status
   currentPage.value = 1
   await loadOrders()
 }
@@ -162,18 +173,29 @@ onMounted(loadOrders)
           <span>Pedidos (MFE)</span>
         </div>
         <div class="d-flex ga-2">
+          <v-select
+            :model-value="selectedStatus"
+            :items="statusOptions"
+            item-title="label"
+            item-value="value"
+            label="Filtrar por status"
+            variant="outlined"
+            density="compact"
+            clearable
+            hide-details
+            style="min-width: 220px"
+            @update:model-value="applyStatusFilter"
+          />
           <v-btn variant="outlined" prepend-icon="mdi-refresh" @click="refreshOrders">Atualizar</v-btn>
-          <v-btn color="primary" @click="activeView = activeView === 'list' ? 'create' : 'list'">
-            <v-icon start :icon="activeView === 'list' ? 'mdi-plus-circle-outline' : 'mdi-format-list-bulleted'" />
-            {{ activeView === 'list' ? 'Novo pedido' : 'Ver pedidos' }}
+          <v-btn color="primary" :to="{ name: 'order-create' }">
+            <v-icon start icon="mdi-plus-circle-outline" />
+            Novo pedido
           </v-btn>
         </div>
       </v-card-title>
 
       <v-card-text>
-        <OrderCreate v-if="activeView === 'create'" @created="handleOrderCreated" />
-
-        <div v-else-if="loading" class="loading-state">
+        <div v-if="loading" class="loading-state">
           <v-progress-circular indeterminate color="primary" />
           <span>Carregando pedidos...</span>
         </div>
@@ -186,8 +208,10 @@ onMounted(loadOrders)
           <v-alert v-if="actionErrorMessage" type="error" variant="tonal" class="mb-4">
             {{ actionErrorMessage }}
           </v-alert>
-
-          <v-row>
+          <v-alert v-if="orders.length === 0" type="info" variant="tonal">
+            Nenhum pedido encontrado.
+          </v-alert>
+          <v-row v-else>
             <v-col v-for="order in orders" :key="order.id" cols="12">
               <v-card variant="outlined" class="order-card">
                 <v-card-title class="d-flex justify-space-between align-center pb-1">
@@ -267,10 +291,6 @@ onMounted(loadOrders)
               </v-card>
             </v-col>
           </v-row>
-
-          <v-alert v-if="orders.length === 0" type="info" variant="tonal">
-            Nenhum pedido encontrado.
-          </v-alert>
 
           <div class="pagination">
             <v-btn variant="outlined" prepend-icon="mdi-chevron-left" :disabled="!hasPreviousPage" @click="goToPreviousPage">

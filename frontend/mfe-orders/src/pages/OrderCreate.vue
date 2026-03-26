@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import type { CreateOrderPayload } from '../types/order'
 import { createOrder } from '../services'
+
+const router = useRouter()
 
 const emit = defineEmits<{
   created: []
@@ -68,6 +71,7 @@ async function submitOrder() {
     successMessage.value = 'Pedido criado com sucesso.'
     resetForm()
     emit('created')
+    await router.push({ name: 'orders' })
   } catch (error) {
     errorMessage.value = "Erro ao criar pedido. Verifique os dados e tente novamente."
   } finally {
@@ -78,7 +82,10 @@ async function submitOrder() {
 
 <template>
   <v-card variant="outlined">
-    <v-card-title>Criar pedido</v-card-title>
+    <v-card-title class="d-flex align-center ga-2">
+      <v-btn icon="mdi-arrow-left" variant="text" @click="router.push({ name: 'orders' })" />
+      <span>Criar pedido</span>
+    </v-card-title>
     <v-card-text>
       <v-form class="order-form" @submit.prevent="submitOrder">
         <v-text-field
