@@ -24,15 +24,9 @@ export default defineConfig(({ mode }) => {
           externalType: 'url',
         },
       },
-      shared: ['vue', 'vue-router'],
+      shared: ['vue', 'vue-router', 'vuetify'],
     }),
-    vue({
-      template: {
-        compilerOptions: {
-          isCustomElement: (tag) => tag.includes('br-'),
-        },
-      },
-    }),
+    vue(),
 
   ],
   resolve: {

@@ -11,7 +11,7 @@ export default defineConfig({
       exposes: {
         './OrdersList': './src/pages/OrdersList.vue',
       },
-      shared: ['vue'],
+      shared: ['vue', 'vuetify'],
     }),
   ],
   build: {

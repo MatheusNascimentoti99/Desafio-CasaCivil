@@ -1,18 +1,19 @@
 import { createApp } from 'vue'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
+import 'vuetify/styles'
 import App from './App.vue'
 import router from './router'
 import './styles/main.css'
-import '@govbr-ds/webcomponents'
-import * as DSGovComponents from '@govbr-ds/webcomponents-vue'
 
 const app = createApp(App)
-
-for (const [name, component] of Object.entries(DSGovComponents)) {
-	if (name.startsWith('Br') && component) {
-		app.component(name, component as never)
-	}
-}
+const vuetify = createVuetify({
+  components,
+  directives,
+})
 
 app.use(router)
+app.use(vuetify)
 
 app.mount('#app')

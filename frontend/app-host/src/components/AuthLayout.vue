@@ -1,9 +1,13 @@
 <template>
-  <main class="auth-page">
-    <section class="auth-card">
-      <RouterView />
-    </section>
-  </main>
+  <v-main>
+    <v-container class="auth-page" fluid>
+      <v-card class="auth-card" elevation="8">
+        <v-card-text>
+          <RouterView />
+        </v-card-text>
+      </v-card>
+    </v-container>
+  </v-main>
 </template>
 
 <style scoped>

@@ -35,22 +35,24 @@ onMounted(loadUser)
 </script>
 
 <template>
-  <main class="home-page">
-    <section class="home-card">
-      <h1>Plataforma de Pedidos</h1>
-      <p v-if="loading">Carregando dados do usuário...</p>
-      <p v-else-if="errorMessage" class="home-error">{{ errorMessage }}</p>
+  <v-container class="home-page" fluid>
+    <v-card class="home-card" elevation="6">
+      <v-card-title class="text-h5">Plataforma de Pedidos</v-card-title>
+      <v-card-text>
+        <p v-if="loading">Carregando dados do usuário...</p>
+        <v-alert v-else-if="errorMessage" type="error" variant="tonal">{{ errorMessage }}</v-alert>
 
-      <div v-else-if="user">
-        <p><strong>Usuário:</strong> {{ user.full_name }}</p>
-        <p><strong>E-mail:</strong> {{ user.email }}</p>
-      </div>
+        <div v-else-if="user">
+          <p><strong>Usuário:</strong> {{ user.full_name }}</p>
+          <p><strong>E-mail:</strong> {{ user.email }}</p>
+        </div>
 
-      <div class="home-actions">
-        <RouterLink class="orders-link" :to="{ name: 'orders' }">Abrir módulo de pedidos</RouterLink>
-      </div>
-    </section>
-  </main>
+        <div class="home-actions">
+          <v-btn color="primary" :to="{ name: 'orders' }">Abrir módulo de pedidos</v-btn>
+        </div>
+      </v-card-text>
+    </v-card>
+  </v-container>
 </template>
 
 <style scoped>
@@ -63,10 +65,7 @@ onMounted(loadUser)
 
 .home-card {
   width: min(100%, 560px);
-  border: 1px solid var(--gray-20, #d9d9d9);
-  border-radius: 12px;
-  padding: 1.5rem;
-  background: #fff;
+  padding: 0.5rem;
 }
 
 .home-actions {
@@ -76,12 +75,4 @@ onMounted(loadUser)
   gap: 0.75rem;
 }
 
-.orders-link {
-  color: #1351b4;
-  font-weight: 600;
-}
-
-.home-error {
-  color: #b00020;
-}
 </style>

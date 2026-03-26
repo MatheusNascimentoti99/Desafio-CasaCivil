@@ -37,37 +37,41 @@ async function handleSubmit() {
 
 <template>
   <div>
-    <h1>Entrar</h1>
+    <h1 class="text-h4">Entrar</h1>
     <p class="auth-subtitle">Acesse a plataforma de pedidos</p>
 
-    <form class="auth-form" @submit.prevent="handleSubmit">
-        <BrInput
-          v-model="form.email"
-          label="E-mail"
-          name="email"
-          placeholder="voce@empresa.com"
-          type="email"
-        />
+    <v-form class="auth-form" @submit.prevent="handleSubmit">
+      <v-text-field
+        v-model="form.email"
+        label="E-mail"
+        name="email"
+        placeholder="voce@empresa.com"
+        type="email"
+        variant="outlined"
+      />
 
-        <BrInput
-          v-model="form.password"
-          label="Senha"
-          name="password"
-          placeholder="Mínimo 8 caracteres"
-          type="password"
-          auto-complete="current-password"
-        />
+      <v-text-field
+        v-model="form.password"
+        label="Senha"
+        name="password"
+        placeholder="Mínimo 8 caracteres"
+        type="password"
+        autocomplete="current-password"
+        variant="outlined"
+      />
 
-        <p v-if="errorMessage" class="auth-error">{{ errorMessage }}</p>
+      <v-alert v-if="errorMessage" type="error" variant="tonal" density="compact">
+        {{ errorMessage }}
+      </v-alert>
 
-        <BrButton type="submit" :disabled="loading">
-          {{ loading ? 'Entrando...' : 'Entrar' }}
-        </BrButton>
-    </form>
+      <v-btn type="submit" :loading="loading" color="primary" block>
+        {{ loading ? 'Entrando...' : 'Entrar' }}
+      </v-btn>
+    </v-form>
 
     <p class="auth-footer">
-        Ainda não tem conta?
-        <RouterLink :to="{ name: 'register' }">Criar cadastro</RouterLink>
+      Ainda não tem conta?
+      <RouterLink :to="{ name: 'register' }">Criar cadastro</RouterLink>
     </p>
   </div>
 </template>
@@ -82,11 +86,6 @@ async function handleSubmit() {
   margin-top: 1rem;
   display: grid;
   gap: 0.75rem;
-}
-
-.auth-error {
-  color: #b00020;
-  font-size: 0.9rem;
 }
 
 .auth-footer {

@@ -77,90 +77,77 @@ async function submitOrder() {
 </script>
 
 <template>
-  <section class="order-create">
-    <h3>Criar pedido</h3>
-
-    <form class="order-form" @submit.prevent="submitOrder">
-      <label class="field">
-        <span>Nome do cliente</span>
-        <input
+  <v-card variant="outlined">
+    <v-card-title>Criar pedido</v-card-title>
+    <v-card-text>
+      <v-form class="order-form" @submit.prevent="submitOrder">
+        <v-text-field
           v-model="form.customer_name"
-          type="text"
-          minlength="2"
+          label="Nome do cliente"
           maxlength="255"
           required
+          variant="outlined"
           placeholder="Ex: Maria Silva"
-        >
-      </label>
+        />
 
-      <div class="items-header">
-        <h4>Itens</h4>
-        <button type="button" class="secondary-btn" @click="addItem">Adicionar item</button>
-      </div>
+        <div class="items-header">
+          <h4>Itens</h4>
+          <v-btn variant="outlined" @click="addItem">Adicionar item</v-btn>
+        </div>
 
-      <div v-for="(item, index) in form.items" :key="index" class="item-row">
-        <label class="field grow">
-          <span>Produto</span>
-          <input
+        <div v-for="(item, index) in form.items" :key="index" class="item-row">
+          <v-text-field
             v-model="item.product_name"
-            type="text"
-            minlength="2"
+            label="Produto"
             maxlength="255"
             required
+            variant="outlined"
             placeholder="Nome do produto"
-          >
-        </label>
+          />
 
-        <label class="field small">
-          <span>Qtd.</span>
-          <input
+          <v-text-field
             v-model.number="item.quantity"
+            label="Qtd."
             type="number"
             min="1"
             step="1"
             required
-          >
-        </label>
+            variant="outlined"
+          />
 
-        <label class="field medium">
-          <span>Valor unit.</span>
-          <input
+          <v-text-field
             v-model.number="item.unit_price"
+            label="Valor unit."
             type="number"
             min="0"
             step="0.01"
             required
+            variant="outlined"
+            prefix="R$"
+          />
+
+          <v-btn
+            color="error"
+            variant="text"
+            :disabled="form.items.length === 1"
+            @click="removeItem(index)"
           >
-        </label>
+            Remover
+          </v-btn>
+        </div>
 
-        <button
-          type="button"
-          class="danger-btn"
-          :disabled="form.items.length === 1"
-          @click="removeItem(index)"
-        >
-          Remover
-        </button>
-      </div>
+        <v-btn color="primary" type="submit" :loading="loading">
+          {{ loading ? 'Criando...' : 'Criar pedido' }}
+        </v-btn>
 
-      <button class="primary-btn" type="submit" :disabled="loading">
-        {{ loading ? 'Criando...' : 'Criar pedido' }}
-      </button>
-
-      <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-      <p v-if="successMessage" class="success">{{ successMessage }}</p>
-    </form>
-  </section>
+        <v-alert v-if="errorMessage" type="error" variant="tonal">{{ errorMessage }}</v-alert>
+        <v-alert v-if="successMessage" type="success" variant="tonal">{{ successMessage }}</v-alert>
+      </v-form>
+    </v-card-text>
+  </v-card>
 </template>
 
 <style scoped>
-.order-create {
-  border: 1px solid #ececec;
-  border-radius: 12px;
-  padding: 1rem;
-  background: #fff;
-}
-
 .order-form {
   display: grid;
   gap: 0.75rem;
@@ -174,53 +161,9 @@ async function submitOrder() {
 
 .item-row {
   display: grid;
-  grid-template-columns: 1fr 90px 140px auto;
+  grid-template-columns: minmax(0, 1fr) 120px 160px auto;
   gap: 0.5rem;
   align-items: end;
-}
-
-.field {
-  display: grid;
-  gap: 0.25rem;
-}
-
-.field input {
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  padding: 0.5rem;
-}
-
-.primary-btn,
-.secondary-btn,
-.danger-btn {
-  border: 1px solid transparent;
-  border-radius: 6px;
-  padding: 0.45rem 0.8rem;
-  cursor: pointer;
-}
-
-.primary-btn {
-  background: #0c6cf2;
-  color: #fff;
-}
-
-.secondary-btn {
-  background: #f3f4f6;
-  border-color: #d1d5db;
-}
-
-.danger-btn {
-  background: #fff5f5;
-  border-color: #fecaca;
-  color: #b91c1c;
-}
-
-.error {
-  color: #b00020;
-}
-
-.success {
-  color: #0f7b0f;
 }
 
 @media (max-width: 900px) {

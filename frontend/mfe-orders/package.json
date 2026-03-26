@@ -9,6 +9,7 @@
     "preview": "vite preview --port 5174"
   },
   "dependencies": {
+    "vuetify": "^3.8.12",
     "vue": "^3.5.30"
   },
   "devDependencies": {

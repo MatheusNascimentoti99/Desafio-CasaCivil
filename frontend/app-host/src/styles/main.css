@@ -1,6 +1,10 @@
-/* Global styles and design system tokens for the app */
-@import '@govbr-ds/core/dist/core-tokens.min.css';
-@import '@govbr-ds/core/dist/core.min.css';
+:root {
+	font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+}
 
-/* Você pode adicionar aqui imports adicionais, ex. tokens de tema, fontes ou overrides: */
-/* @import '@govbr-ds/core/dist/core-components-overrides.css'; */
+html,
+body,
+#app {
+	margin: 0;
+	min-height: 100%;
+}

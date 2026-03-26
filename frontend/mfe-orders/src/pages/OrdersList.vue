@@ -62,136 +62,86 @@ onMounted(loadOrders)
 </script>
 
 <template>
-  <div class="orders-app">
-    <header class="orders-header">
-      <h2>Pedidos (MFE)</h2>
-      <div class="actions">
-        <button class="refresh-btn" type="button" @click="refreshOrders">Atualizar</button>
-        <button
-          class="create-btn"
-          type="button"
-          @click="activeView = activeView === 'list' ? 'create' : 'list'"
-        >
-          {{ activeView === 'list' ? 'Novo pedido' : 'Ver pedidos' }}
-        </button>
-      </div>
-    </header>
-
-    <OrderCreate v-if="activeView === 'create'" @created="handleOrderCreated" />
-
-    <p v-else-if="loading">Carregando pedidos...</p>
-    <p v-else-if="errorMessage" class="error">{{ errorMessage }}</p>
-
-    <ul v-else class="orders-list">
-      <li v-for="order in orders" :key="order.id" class="order-card">
-        <div><strong>Cliente:</strong> {{ order.customer_name }}</div>
-        <div><strong>Status:</strong> {{ order.status }}</div>
-        <div><strong>Itens:</strong>
-          <ul class="items-list">
-            <li v-for="(item, index) in order.items" :key="index">
-              {{ item.product_name }} - Quantidade: {{ item.quantity }} - Preço unitário: R$ {{ item.unit_price.toFixed(2) }}
-            </li>
-          </ul>
+  <v-container fluid class="pa-0">
+    <v-card>
+      <v-card-title class="d-flex justify-space-between align-center">
+        <span>Pedidos (MFE)</span>
+        <div class="d-flex ga-2">
+          <v-btn variant="outlined" @click="refreshOrders">Atualizar</v-btn>
+          <v-btn color="primary" @click="activeView = activeView === 'list' ? 'create' : 'list'">
+            {{ activeView === 'list' ? 'Novo pedido' : 'Ver pedidos' }}
+          </v-btn>
         </div>
-      </li>
-      <li v-if="orders.length === 0" class="empty">Nenhum pedido encontrado.</li>
-    </ul>
+      </v-card-title>
 
-    <div v-if="activeView === 'list' && !loading && !errorMessage" class="pagination">
-      <button type="button" class="page-btn" :disabled="!hasPreviousPage" @click="goToPreviousPage">
-        Anterior
-      </button>
-      <span class="page-indicator">Página {{ currentPage }}</span>
-      <button type="button" class="page-btn" :disabled="!hasNextPage" @click="goToNextPage">
-        Próxima
-      </button>
-    </div>
-  </div>
+      <v-card-text>
+        <OrderCreate v-if="activeView === 'create'" @created="handleOrderCreated" />
+
+        <div v-else-if="loading" class="loading-state">
+          <v-progress-circular indeterminate color="primary" />
+          <span>Carregando pedidos...</span>
+        </div>
+
+        <v-alert v-else-if="errorMessage" type="error" variant="tonal">
+          {{ errorMessage }}
+        </v-alert>
+
+        <template v-else>
+          <v-row>
+            <v-col v-for="order in orders" :key="order.id" cols="12">
+              <v-card variant="outlined">
+                <v-card-text>
+                  <div><strong>Cliente:</strong> {{ order.customer_name }}</div>
+                  <div><strong>Status:</strong> {{ order.status }}</div>
+                  <div>
+                    <strong>Itens:</strong>
+                    <ul class="items-list">
+                      <li v-for="(item, index) in order.items" :key="index">
+                        {{ item.product_name }} - Quantidade: {{ item.quantity }} - Preço unitário: R$ {{ item.unit_price.toFixed(2) }}
+                      </li>
+                    </ul>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <v-alert v-if="orders.length === 0" type="info" variant="tonal">
+            Nenhum pedido encontrado.
+          </v-alert>
+
+          <div class="pagination">
+            <v-btn variant="outlined" :disabled="!hasPreviousPage" @click="goToPreviousPage">
+              Anterior
+            </v-btn>
+            <span>Página {{ currentPage }}</span>
+            <v-btn color="primary" :disabled="!hasNextPage" @click="goToNextPage">
+              Próxima
+            </v-btn>
+          </div>
+        </template>
+      </v-card-text>
+    </v-card>
+  </v-container>
 </template>
 
 <style scoped>
-.orders-app {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 1rem;
-  background: #fff;
-}
-
-.orders-header {
+.loading-state {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.refresh-btn {
-  border: 1px solid #c7c7c7;
-  background: #f5f5f5;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.create-btn {
-  border: 1px solid #0c6cf2;
-  background: #0c6cf2;
-  color: #fff;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.orders-list {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0 0;
-  display: grid;
   gap: 0.75rem;
 }
 
-.order-card {
-  border: 1px solid #ececec;
-  border-radius: 8px;
-  padding: 0.75rem;
-}
-
-.error {
-  color: #b00020;
-}
-
-.empty {
-  color: #666;
-}
-
 .pagination {
-  margin-top: 1rem;
+  margin-top: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
 }
 
-.page-btn {
-  border: 1px solid #d0d0d0;
-  background: #fff;
-  color: #1f2937;
-  padding: 0.35rem 0.75rem;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.page-indicator {
-  color: #374151;
-  font-size: 0.95rem;
+.items-list {
+  margin: 0.5rem 0 0;
+  padding-left: 1rem;
 }
 </style>

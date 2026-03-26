@@ -42,43 +42,48 @@ async function handleSubmit() {
 
 <template>
   <div>
-    <h1>Novo registro</h1>
+    <h1 class="text-h4">Novo registro</h1>
     <p class="auth-subtitle">Crie sua conta para acessar o sistema</p>
 
-    <form class="auth-form" @submit.prevent="handleSubmit">
-        <BrInput
-          v-model="form.full_name"
-          label="Nome completo"
-          name="full_name"
-          placeholder="Seu nome"
-        />
+    <v-form class="auth-form" @submit.prevent="handleSubmit">
+      <v-text-field
+        v-model="form.full_name"
+        label="Nome completo"
+        name="full_name"
+        placeholder="Seu nome"
+        variant="outlined"
+      />
 
-        <BrInput
-          v-model="form.email"
-          label="E-mail"
-          name="email"
-          placeholder="voce@empresa.com"
-          type="email"
-        />
+      <v-text-field
+        v-model="form.email"
+        label="E-mail"
+        name="email"
+        placeholder="voce@empresa.com"
+        type="email"
+        variant="outlined"
+      />
 
-        <BrInput
-          v-model="form.password"
-          label="Senha"
-          name="password"
-          placeholder="Mínimo 8 caracteres"
-          type="password"
-        />
+      <v-text-field
+        v-model="form.password"
+        label="Senha"
+        name="password"
+        placeholder="Mínimo 8 caracteres"
+        type="password"
+        variant="outlined"
+      />
 
-        <p v-if="errorMessage" class="auth-error">{{ errorMessage }}</p>
+      <v-alert v-if="errorMessage" type="error" variant="tonal" density="compact">
+        {{ errorMessage }}
+      </v-alert>
 
-        <BrButton type="submit" :disabled="loading">
-          {{ loading ? 'Registrando...' : 'Registrar' }}
-        </BrButton>
-    </form>
+      <v-btn type="submit" :loading="loading" color="primary" block>
+        {{ loading ? 'Registrando...' : 'Registrar' }}
+      </v-btn>
+    </v-form>
 
     <p class="auth-footer">
-        Já possui conta?
-        <RouterLink :to="{ name: 'login' }">Entrar</RouterLink>
+      Já possui conta?
+      <RouterLink :to="{ name: 'login' }">Entrar</RouterLink>
     </p>
   </div>
 </template>
@@ -93,11 +98,6 @@ async function handleSubmit() {
   margin-top: 1rem;
   display: grid;
   gap: 0.75rem;
-}
-
-.auth-error {
-  color: #b00020;
-  font-size: 0.9rem;
 }
 
 .auth-footer {
