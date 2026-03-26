@@ -52,6 +52,20 @@ export async function loginUser(payload: LoginPayload): Promise<TokenResponse> {
   return response.json() as Promise<TokenResponse>
 }
 
+export async function listUsers(token: string): Promise<UserResponse[]> {
+  const response = await fetch(buildUrl('/api/auth/users'), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(await parseError(response))
+  }
+
+  return response.json() as Promise<UserResponse[]>
+}
+
 export async function getCurrentUser(token: string): Promise<UserResponse> {
   const response = await fetch(buildUrl('/api/auth/users/me'), {
     headers: {

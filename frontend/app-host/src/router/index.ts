@@ -3,6 +3,7 @@ import AuthLayout from '@/components/AuthLayout.vue'
 import HomePage from '@/pages/HomePage.vue'
 import LoginPage from '@/pages/LoginPage.vue'
 import RegisterPage from '@/pages/RegisterPage.vue'
+import UsersPage from '@/pages/UsersPage.vue'
 import MainLayout from '@/components/MainLayout.vue'
 import { defineAsyncComponent } from 'vue'
 
@@ -19,6 +20,12 @@ const router = createRouter({
           alias: '',
           name: 'home',
           component: HomePage,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: '/users',
+          name: 'users',
+          component: UsersPage,
           meta: { requiresAuth: true },
         },
         {
