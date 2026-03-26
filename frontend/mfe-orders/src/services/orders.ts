@@ -1,4 +1,4 @@
-import type { CreateOrderPayload, Order } from '../types/order'
+import type { CreateOrderPayload, Order, OrderStatus } from '../types/order'
 import { buildUrl, getAuthHeaders, parseError } from './auth'
 
 export interface ListOrdersParams {
@@ -32,6 +32,23 @@ export async function createOrder(payload: CreateOrderPayload): Promise<Order> {
       ...getAuthHeaders(),
     },
     body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    throw new Error(await parseError(response))
+  }
+
+  return response.json() as Promise<Order>
+}
+
+export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<Order> {
+  const response = await fetch(buildUrl(`/api/orders/${orderId}/status`), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ status }),
   })
 
   if (!response.ok) {

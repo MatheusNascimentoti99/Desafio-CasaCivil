@@ -8,6 +8,28 @@ from app.models import Order, OrderItem, OrderStatus
 from app.schemas import OrderCreate
 
 
+STATUS_NEXT_TRANSITION: dict[OrderStatus, OrderStatus] = {
+    OrderStatus.PENDING: OrderStatus.CONFIRMED,
+    OrderStatus.CONFIRMED: OrderStatus.SHIPPED,
+    OrderStatus.SHIPPED: OrderStatus.DELIVERED,
+}
+
+
+def get_allowed_status_transitions(current_status: OrderStatus) -> set[OrderStatus]:
+    if current_status == OrderStatus.CANCELLED:
+        return set()
+
+    allowed: set[OrderStatus] = set()
+    next_status = STATUS_NEXT_TRANSITION.get(current_status)
+    if next_status:
+        allowed.add(next_status)
+
+    if current_status != OrderStatus.DELIVERED:
+        allowed.add(OrderStatus.CANCELLED)
+
+    return allowed
+
+
 async def get_orders(
     db: AsyncSession,
     status_filter: OrderStatus | None = None,
@@ -60,6 +82,19 @@ async def update_order_status(
     order = await get_order_by_id(db, order_id)
     if not order:
         return None
+
+    if order.status == new_status:
+        return order
+
+    allowed_statuses = get_allowed_status_transitions(order.status)
+    if new_status not in allowed_statuses:
+        allowed_values = ", ".join(sorted(status.value for status in allowed_statuses))
+        raise ValueError(
+            "Transição de status inválida: "
+            f"{order.status.value} -> {new_status.value}. "
+            f"Próximos status permitidos: [{allowed_values}]"
+        )
+
     order.status = new_status
     await db.commit()
     await db.refresh(order)

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import OrderCreate from './OrderCreate.vue'
-import { listOrders } from '../services'
-import type { Order } from '../types/order'
+import { listOrders, updateOrderStatus } from '../services'
+import type { Order, OrderStatus } from '../types/order'
 
 const loading = ref(false)
+const updatingOrderId = ref<string | null>(null)
 const errorMessage = ref('')
+const actionErrorMessage = ref('')
 const orders = ref<Order[]>([])
 const activeView = ref<'list' | 'create'>('list')
 const currentPage = ref(1)
@@ -22,22 +24,77 @@ function formatCurrency(value: number | undefined) {
   return currencyFormatter.format(value ?? 0)
 }
 
-function statusColor(status: string) {
-  const normalized = status.toLowerCase()
-
-  if (normalized === 'completed' || normalized === 'paid') {
+function statusColor(status: OrderStatus) {
+  if (status === 'entregue') {
     return 'success'
   }
 
-  if (normalized === 'pending') {
+  if (status === 'pendente') {
     return 'warning'
   }
 
-  if (normalized === 'cancelled' || normalized === 'canceled') {
+  if (status === 'cancelado') {
     return 'error'
   }
 
   return 'info'
+}
+
+function nextStatus(status: OrderStatus): OrderStatus | null {
+  if (status === 'pendente') {
+    return 'confirmado'
+  }
+
+  if (status === 'confirmado') {
+    return 'enviado'
+  }
+
+  if (status === 'enviado') {
+    return 'entregue'
+  }
+
+  return null
+}
+
+function nextStatusLabel(status: OrderStatus): string {
+  if (status === 'pendente') {
+    return 'Confirmar'
+  }
+
+  if (status === 'confirmado') {
+    return 'Marcar como enviado'
+  }
+
+  if (status === 'enviado') {
+    return 'Marcar como entregue'
+  }
+
+  return 'Avançar status'
+}
+
+function canCancel(status: OrderStatus): boolean {
+  return status !== 'entregue' && status !== 'cancelado'
+}
+
+async function changeStatus(order: Order, targetStatus: OrderStatus) {
+  if (updatingOrderId.value || order.status === 'cancelado') {
+    return
+  }
+
+  updatingOrderId.value = order.id
+  actionErrorMessage.value = ''
+
+  try {
+    const updated = await updateOrderStatus(order.id, targetStatus)
+    const idx = orders.value.findIndex((item) => item.id === order.id)
+    if (idx >= 0) {
+      orders.value[idx] = updated
+    }
+  } catch (error) {
+    actionErrorMessage.value = error instanceof Error ? error.message : 'Erro ao atualizar status'
+  } finally {
+    updatingOrderId.value = null
+  }
 }
 
 function orderTotal(order: Order) {
@@ -126,6 +183,10 @@ onMounted(loadOrders)
         </v-alert>
 
         <template v-else>
+          <v-alert v-if="actionErrorMessage" type="error" variant="tonal" class="mb-4">
+            {{ actionErrorMessage }}
+          </v-alert>
+
           <v-row>
             <v-col v-for="order in orders" :key="order.id" cols="12">
               <v-card variant="outlined" class="order-card">
@@ -172,6 +233,36 @@ onMounted(loadOrders)
                       </v-list-item-subtitle>
                     </v-list-item>
                   </v-list>
+
+                  <v-divider class="my-3" />
+
+                  <div class="d-flex flex-wrap ga-2">
+                    <v-btn
+                      v-if="nextStatus(order.status)"
+                      color="primary"
+                      variant="tonal"
+                      size="small"
+                      :loading="updatingOrderId === order.id"
+                      :disabled="updatingOrderId !== null"
+                      @click="changeStatus(order, nextStatus(order.status) as OrderStatus)"
+                    >
+                      <v-icon start icon="mdi-arrow-right-bold-circle-outline" />
+                      {{ nextStatusLabel(order.status) }}
+                    </v-btn>
+
+                    <v-btn
+                      v-if="canCancel(order.status)"
+                      color="error"
+                      variant="outlined"
+                      size="small"
+                      :loading="updatingOrderId === order.id"
+                      :disabled="updatingOrderId !== null"
+                      @click="changeStatus(order, 'cancelado')"
+                    >
+                      <v-icon start icon="mdi-cancel" />
+                      Cancelar pedido
+                    </v-btn>
+                  </div>
                 </v-card-text>
               </v-card>
             </v-col>

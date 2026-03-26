@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas import OrderCreate, OrderItemCreate, OrderStatus
 from app.services.order import (
     create_order,
+    get_allowed_status_transitions,
     get_order_by_id,
     get_orders,
     update_order_status,
@@ -148,6 +149,44 @@ async def test_update_order_status(db: AsyncSession, order_data, user_email):
     updated_order = await update_order_status(db, order.id, OrderStatus.DELIVERED)
     assert updated_order is not None
     assert updated_order.status == OrderStatus.DELIVERED
+
+
+@pytest.mark.asyncio
+async def test_status_transitions_rules(db: AsyncSession, order_data, user_email):
+    order = await create_order(db, order_data, user_email)
+
+    assert get_allowed_status_transitions(OrderStatus.PENDING) == {
+        OrderStatus.CONFIRMED,
+        OrderStatus.CANCELLED,
+    }
+
+    await update_order_status(db, order.id, OrderStatus.CONFIRMED)
+    updated_order = await get_order_by_id(db, order.id)
+    assert updated_order is not None
+    assert get_allowed_status_transitions(updated_order.status) == {
+        OrderStatus.SHIPPED,
+        OrderStatus.CANCELLED,
+    }
+
+
+@pytest.mark.asyncio
+async def test_delivered_cannot_be_cancelled(db: AsyncSession, order_data, user_email):
+    order = await create_order(db, order_data, user_email)
+    await update_order_status(db, order.id, OrderStatus.CONFIRMED)
+    await update_order_status(db, order.id, OrderStatus.SHIPPED)
+    await update_order_status(db, order.id, OrderStatus.DELIVERED)
+
+    with pytest.raises(ValueError):
+        await update_order_status(db, order.id, OrderStatus.CANCELLED)
+
+
+@pytest.mark.asyncio
+async def test_cancelled_cannot_change_status(db: AsyncSession, order_data, user_email):
+    order = await create_order(db, order_data, user_email)
+    await update_order_status(db, order.id, OrderStatus.CANCELLED)
+
+    with pytest.raises(ValueError):
+        await update_order_status(db, order.id, OrderStatus.CONFIRMED)
 
 
 @pytest.mark.asyncio

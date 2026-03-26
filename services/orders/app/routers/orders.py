@@ -79,7 +79,14 @@ async def patch_order_status(
     db: AsyncSession = Depends(get_db),
     _user_email: str = Depends(get_current_user_email),
 ):
-    order = await update_order_status(db, order_id, body.status)
+    try:
+        order = await update_order_status(db, order_id, body.status)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
     if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
