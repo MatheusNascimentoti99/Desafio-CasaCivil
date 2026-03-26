@@ -1,41 +1,80 @@
-# Plataforma de Gestão de Pedidos — PMV
+# Plataforma de Gestão de Pedidos — E-cCC
 
-Plataforma interna de gestão de pedidos para e-commerce, construída com arquitetura de microsserviços (FastAPI) e API Gateway (Nginx).
+Plataforma interna de gestão de pedidos para e-commerce (E-Commerce Casa Cívil), construída com arquitetura de micro-frontends (Vue 3 + Module Federation) e microsserviços (FastAPI), comunicando-se via Nginx como API Gateway.
 
 ---
 
-##  Arquitetura
+## Arquitetura
 
 ```mermaid
 graph TD
-    Client["Cliente (Browser)"] -->|:8080| Nginx["Nginx API Gateway"]
+    Client["Cliente (Browser)"]
+
+    Client -->|":3000"| AppHost["app-host\nVue 3 Shell · Nginx :3000"]
+    AppHost -->|"Module Federation"| MfeOrders["mfe-orders\nVue 3 Remote"]
+
+    AppHost -->|"HTTP REST + JWT"| Nginx["Nginx API Gateway :8080"]
+    MfeOrders -->|"HTTP REST + JWT"| Nginx
 
     Nginx -->|"/api/auth/*"| Auth["Auth Service :8001"]
     Nginx -->|"/api/orders/*"| Orders["Orders Service :8002"]
 
     Auth --> AuthDB[("auth_db <br> PostgreSQL :5433")]
-    Auth --> Redis[("Redis <br> DB 0:6379/0  <br>  DB 1:6379/1")]
-    
-    Orders --> OrdersDB[("orders_db <br> PostgreSQL :5434")]
-    Orders --> Redis[("Redis <br> DB 0:6379/0  <br>  DB 1:6379/1")]
+    Auth --> Redis[("Redis <br> DB 0:6379/0 <br> DB 1:6379/1")]
 
-    style Redis fill:#dc382c,color:#fff,stroke:#b71c1c,stroke-width:3px
-    style Nginx fill:#009639,color:#fff
-    style Auth fill:#2563eb,color:#fff
-    style Orders fill:#2563eb,color:#fff
+    Orders --> OrdersDB[("orders_db <br> PostgreSQL :5434")]
+    Orders --> Redis
+
+    style AppHost   fill:#42b883,color:#fff,stroke:#33a06f
+    style MfeOrders fill:#42b883,color:#fff,stroke:#33a06f
+    style Redis     fill:#dc382c,color:#fff,stroke:#b71c1c,stroke-width:3px
+    style Nginx     fill:#009639,color:#fff
+    style Auth      fill:#2563eb,color:#fff
+    style Orders    fill:#2563eb,color:#fff
 ```
 
 ### Componentes
 
 | Componente | Tecnologia | Porta | Descrição |
 |------------|-----------|-------|-----------|
+| App Host | Vue 3 + Vite · Nginx | 3000 | Shell do frontend (Module Federation host) |
+| MFE Orders | Vue 3 + Vite · Nginx | 3001 | Micro-frontend de pedidos (remote) |
 | API Gateway | Nginx 1.25 | 8080 | Reverse proxy, roteamento por path |
-| Auth Service | FastAPI + Python 3.12 | 8001 | Autenticação, gestão de usuários, JWT |
+| Auth Service | FastAPI + Python 3.12 | 8001 | Autenticação, gestão de usuários, JWT RS256 |
 | Orders Service | FastAPI + Python 3.12 | 8002 | CRUD de pedidos, filtros por status |
-| Auth DB | PostgreSQL 16 | 5433 | Banco exclusivo do serviço de auth |
-| Orders DB | PostgreSQL 16 | 5434 | Banco exclusivo do serviço de pedidos |
+| Auth DB | PostgreSQL 16 | 3000 | Banco exclusivo do serviço de auth |
+| Orders DB | PostgreSQL 16 | 3001 | Banco exclusivo do serviço de pedidos |
 | Redis DB 0 | Redis 7 | 6379/0 | Cache do Orders Service |
 | Redis DB 1 | Redis 7 | 6379/1 | Cache do Auth Service |
+
+---
+
+## 🖥️ Frontend
+
+A camada de apresentação é composta por dois aplicativos Vue 3 com **Module Federation (Vite)**:
+
+### app-host — Shell da aplicação
+
+- Vue 3 + Vuetify 3 + Vue Router
+- Gerencia autenticação (login, registro, logout)
+- Carrega o `mfe-orders` dinamicamente em runtime
+- **Guarda de rota com verificação de expiração JWT**: decodifica o claim `exp` do token sem dependências externas e redireciona para `/login` se expirado
+
+**Páginas:**
+
+| Rota | Página | Descrição |
+|------|--------|-----------|
+| `/login` | LoginPage | Formulário de login |
+| `/register` | RegisterPage | Registro de novo usuário |
+| `/home` | HomePage | Dashboard do usuário autenticado |
+| `/users` | UsersPage | Listagem de usuários com busca e filtro de status |
+| `/orders` | OrdersList (MFE) | Listagem de pedidos (carregado via Module Federation) |
+| `/orders/create` | OrderCreate (MFE) | Criação de pedido (carregado via Module Federation) |
+
+### mfe-orders — Micro-frontend de pedidos
+
+- Vue 3 exposto como remote via Module Federation
+- Expõe `OrdersList` e `OrderCreate` para consumo pelo `app-host`
 
 ---
 
@@ -47,26 +86,21 @@ graph TD
 ### Subir a stack completa
 
 ```bash
-docker-compose up --build -d
+docker compose up --build -d
 ```
 
 ### Verificar saúde dos serviços
 
 ```bash
-# Gateway
-curl http://localhost:8080/health
-
-# Auth Service
 curl http://localhost:8080/api/auth/health
-
-# Orders Service
 curl http://localhost:8080/api/orders/health
 ```
 
-### Acessar documentação Swagger
+### Acessar a aplicação
 
-- **Auth Service:** http://localhost:8080/api/auth/docs
-- **Orders Service:** http://localhost:8080/api/orders/docs
+- **Frontend:** http://localhost:3000
+- **Auth API Docs:** http://localhost:8080/api/auth/docs
+- **Orders API Docs:** http://localhost:8080/api/orders/docs
 
 ---
 
@@ -78,7 +112,7 @@ curl http://localhost:8080/api/orders/health
 |--------|----------|-----------|-------------|
 | POST | `/api/auth/register` | Registrar novo usuário | Não |
 | POST | `/api/auth/login` | Login (retorna JWT) | Não |
-| GET | `/api/auth/users` | Listar usuários | JWT |
+| GET | `/api/auth/users` | Listar todos os usuários | JWT |
 | GET | `/api/auth/users/me` | Dados do usuário logado | JWT |
 
 ### Orders Service (`/api/orders`)
@@ -118,14 +152,11 @@ curl -X POST http://localhost:8080/api/orders/ \
 # 4. Listar pedidos
 curl http://localhost:8080/api/orders/ -H "Authorization: Bearer $TOKEN"
 
-# 5. Filtrar por status
-curl "http://localhost:8080/api/orders/?status=pending" -H "Authorization: Bearer $TOKEN"
-
-# 6. Atualizar status
+# 5. Atualizar status
 curl -X PATCH http://localhost:8080/api/orders/{ORDER_ID}/status \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
-  -d '{"status": "confirmed"}'
+  -d '{"status": "confirmado"}'
 ```
 
 ---
@@ -148,19 +179,19 @@ curl -X PATCH http://localhost:8080/api/orders/{ORDER_ID}/status \
 - Roteamento simples por path prefix (`/api/auth/`, `/api/orders/`)
 - Facilmente extensível para load balancing, rate limiting, SSL termination
 
-### Por que JWT compartilhado?
-- **Stateless**: cada serviço valida o token sem chamada de rede ao auth-service
-- **Simplicidade**: mesma `SECRET_KEY` injetada via environment variables no Docker Compose
-- **Escalabilidade**: novos serviços só precisam da chave para validar tokens
+### Por que JWT RS256 (assimétrico)?
+- **Stateless**: cada serviço valida o token com a chave pública sem chamada de rede
+- **Segurança**: somente o Auth Service possui a chave privada para assinar tokens
+- **Escalabilidade**: novos serviços só precisam da chave pública para validar
 
 ### Banco de dados separados (Database per Service)
 - Isolamento total entre domínios
 - Cada serviço é dono do seu schema
 - Permite escolher tecnologias diferentes por serviço no futuro
 
-### Cache com Redis (Orders Service)
+### Cache com Redis (decorator pattern)
 
-O serviço de pedidos utiliza **Redis** como cache de respostas, implementado via **decorators** aplicados na camada de rotas. A camada de serviço (regras de negócio) permanece inalterada.
+O cache é implementado via **decorators** na camada de rotas. A camada de serviço permanece inalterada.
 
 ```mermaid
 sequenceDiagram
@@ -185,26 +216,41 @@ sequenceDiagram
     end
 ```
 
-#### Decorators
-
 | Decorator | Aplicado em | Função |
 |---|---|---|
-| `@cached(prefix, ttl)` | Endpoints `GET` | Cache-aside — gera a chave automaticamente a partir dos parâmetros da rota |
-| `@invalidates_cache(*patterns)` | Endpoints `POST`, `PATCH` | Invalida chaves após escrita, suporta wildcards (`*`) e interpolação (`{order_id}`) |
-
-#### Configuração
+| `@cached(prefix, ttl)` | Endpoints `GET` | Cache-aside — chave gerada automaticamente a partir dos parâmetros da rota |
+| `@invalidates_cache(*patterns)` | Endpoints `POST`, `PATCH` | Invalida chaves após escrita, suporta wildcards e interpolação |
 
 | Variável | Default | Descrição |
 |---|---|---|
-| `REDIS_URL` | `redis://redis:6379/0` | URL de conexão do Redis |
 | `CACHE_ENABLED` | `true` | Desativar cache sem remover o código |
 | `CACHE_TTL_ORDER` | `600` | TTL em segundos para pedido individual |
 | `CACHE_TTL_ORDER_LIST` | `300` | TTL em segundos para listagens |
 
-#### Resiliência
-- Se o Redis estiver indisponível, o app continua funcionando normalmente via PostgreSQL
-- Erros de cache são apenas logados, nunca propagados
-- `CACHE_ENABLED=false` desabilita o cache por completo
+> Se o Redis estiver indisponível, o app continua funcionando normalmente via PostgreSQL (graceful degradation).
+
+### Guarda de expiração JWT (frontend)
+
+O Vue Router decodifica o claim `exp` do JWT diretamente no `beforeEach` sem bibliotecas externas. Se o token estiver expirado, ele é removido do `localStorage` e o usuário é redirecionado para `/login`.
+
+---
+
+## 🧪 CI/CD
+
+O repositório utiliza **GitHub Actions** com uma pipeline que executa os testes unitários de ambos os serviços em paralelo a cada Pull Request e push em `main`.
+
+```yaml
+# .github/workflows/tests.yml
+strategy:
+  matrix:
+    service:
+      - services/auth
+      - services/orders
+```
+
+- Testes rodam com **SQLite em memória** — nenhum serviço externo necessário
+- Chaves RSA do JWT são injetadas via **GitHub Secrets** (`JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`)
+- Cobertura atual: 15 testes (auth) + 33 testes (orders)
 
 ---
 
@@ -218,18 +264,18 @@ sequenceDiagram
 - **SSL/TLS** termination no gateway
 
 ### Decisões que não tomei e por quê
-- **Não usei Django REST Framework**: apesar de mais popular, seria overengineering para um PMV com microsserviços simples
+- **Não usei Django REST Framework**: seria overengineering para um PMV com microsserviços simples
 - **Não implementei event sourcing**: complexidade desnecessária neste estágio; CRUD é suficiente para o domínio atual
 - **Não separei em multi-repo**: a facilidade do mono-repo para Docker Compose e CI supera a independência de deploy neste PMV
-- **Não usei API Gateway dedicado (Kong, Traefik)**: Nginx atende perfeitamente o caso de uso atual e é mais simples de configurar
+- **Não usei API Gateway dedicado (Kong, Traefik)**: Nginx atende perfeitamente o caso de uso atual
 
 ---
 
 ## 🛑 Parar a stack
 
 ```bash
-docker-compose down
+docker compose down
 
 # Para remover também os volumes (dados):
-docker-compose down -v
+docker compose down -v
 ```
