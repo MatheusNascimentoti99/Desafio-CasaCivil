@@ -123,7 +123,7 @@ async def test_get_orders_with_status_filter(db: AsyncSession, order_data, user_
     # Listar apenas pedidos PENDING
     pending_orders = await get_orders(db, status_filter=OrderStatus.PENDING)
 
-    assert len(confirmed_orders) >= 1
+    assert len(confirmed_orders) == 1
     assert any(o.id == order.id for o in confirmed_orders)
     assert len(pending_orders) == 0
 
