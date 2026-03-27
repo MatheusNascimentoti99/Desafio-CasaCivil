@@ -9,6 +9,8 @@ services:
       POSTGRES_USER: ${AUTH_DB_USER}
       POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
       POSTGRES_DB: ${AUTH_DB_NAME}
+    ports:
+      - "5433:5432"
     volumes:
       - auth_db_data:/var/lib/postgresql/data
     healthcheck:
@@ -26,6 +28,8 @@ services:
       POSTGRES_USER: ${ORDERS_DB_USER}
       POSTGRES_PASSWORD: ${ORDERS_DB_PASSWORD}
       POSTGRES_DB: ${ORDERS_DB_NAME}
+    ports:
+      - "5434:5432"
     volumes:
       - orders_db_data:/var/lib/postgresql/data
     healthcheck:
