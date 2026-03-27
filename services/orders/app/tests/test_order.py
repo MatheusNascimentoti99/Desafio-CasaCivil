@@ -105,7 +105,7 @@ async def test_get_orders_list(db: AsyncSession, order_data, user_email):
     orders = await get_orders(db, skip=0, limit=10)
 
     assert isinstance(orders, list)
-    assert len(orders) >= 2
+    assert len(orders) == 2
     assert any(o.id == order1.id for o in orders)
     assert any(o.id == order2.id for o in orders)
 
