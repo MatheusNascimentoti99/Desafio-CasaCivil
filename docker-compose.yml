@@ -9,8 +9,6 @@ services:
       POSTGRES_USER: ${AUTH_DB_USER}
       POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
       POSTGRES_DB: ${AUTH_DB_NAME}
-    ports:
-      - "${AUTH_DB_PORT:-5433}:5432"
     volumes:
       - auth_db_data:/var/lib/postgresql/data
     healthcheck:
@@ -28,8 +26,6 @@ services:
       POSTGRES_USER: ${ORDERS_DB_USER}
       POSTGRES_PASSWORD: ${ORDERS_DB_PASSWORD}
       POSTGRES_DB: ${ORDERS_DB_NAME}
-    ports:
-      - "${ORDERS_DB_PORT:-5434}:5432"
     volumes:
       - orders_db_data:/var/lib/postgresql/data
     healthcheck:
@@ -70,6 +66,7 @@ services:
       AUTH_DB_USER: ${AUTH_DB_USER}
       AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD}
       AUTH_DB_NAME: ${AUTH_DB_NAME}
+      AUTH_DB_PORT: 5432
       JWT_ALGORITHM: ${JWT_ALGORITHM:-RS256}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
       JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
@@ -95,6 +92,7 @@ services:
       ORDERS_DB_USER: ${ORDERS_DB_USER}
       ORDERS_DB_PASSWORD: ${ORDERS_DB_PASSWORD}
       ORDERS_DB_NAME: ${ORDERS_DB_NAME}
+      ORDERS_DB_PORT: 5432
       JWT_ALGORITHM: ${JWT_ALGORITHM:-RS256}
       JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
