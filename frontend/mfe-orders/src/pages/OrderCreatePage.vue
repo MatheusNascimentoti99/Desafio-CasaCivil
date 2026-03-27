@@ -81,7 +81,7 @@ async function submitOrder() {
 </script>
 
 <template>
-  <v-card variant="outlined">
+  <v-card>
     <v-card-title class="d-flex align-center ga-2">
       <v-btn icon="mdi-arrow-left" variant="text" @click="router.push({ name: 'orders' })" />
       <span>Criar pedido</span>

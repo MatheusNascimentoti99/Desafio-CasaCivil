@@ -213,7 +213,7 @@ onMounted(loadOrders)
           </v-alert>
           <v-row v-else>
             <v-col v-for="order in orders" :key="order.id" cols="12">
-              <v-card variant="outlined" class="order-card">
+              <v-card class="order-card">
                 <v-card-title class="d-flex justify-space-between align-center pb-1">
                   <div class="d-flex align-center ga-2">
                     <v-icon icon="mdi-account-circle-outline" color="primary" />
