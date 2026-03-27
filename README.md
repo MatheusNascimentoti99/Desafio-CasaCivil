@@ -237,17 +237,22 @@ O Vue Router decodifica o claim `exp` do JWT diretamente no `beforeEach` sem bib
 
 ## 🧪 CI/CD
 
-O repositório utiliza **GitHub Actions** com uma pipeline que executa os testes unitários de ambos os serviços em paralelo a cada Pull Request e push em `main`.
+O repositório utiliza **GitHub Actions** com uma pipeline que executa os testes unitários de cada serviço **somente quando seu código muda** a cada push.
 
 ```yaml
 # .github/workflows/tests.yml
-strategy:
-  matrix:
-    service:
-      - services/auth
-      - services/orders
+jobs:
+  changes:         # detecta quais serviços foram modificados
+    uses: dorny/paths-filter@v4
+
+  test-auth:       # roda apenas se services/auth/** mudou
+    if: needs.changes.outputs.auth == 'true'
+
+  test-orders:     # roda apenas se services/orders/** mudou
+    if: needs.changes.outputs.orders == 'true'
 ```
 
+- **Paths filter**: testes de um serviço não rodam quando apenas o outro muda
 - Testes rodam com **SQLite em memória** — nenhum serviço externo necessário
 - Chaves RSA do JWT são injetadas via **GitHub Secrets** (`JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`)
 - Cobertura atual: 15 testes (auth) + 33 testes (orders)
