@@ -10,7 +10,7 @@ jobs:
       auth: ${{ steps.filter.outputs.auth }}
       orders: ${{ steps.filter.outputs.orders }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -20,41 +20,45 @@ jobs:
             orders:
               - 'services/orders/**'
 
-  test:
+  test-auth:
     needs: changes
-    if: ${{ needs.changes.outputs[matrix.service_key] == 'true' }}
-    name: test (${{ matrix.service }})
+    if: needs.changes.outputs.auth == 'true'
+    name: test (services/auth)
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: true
-      matrix:
-        include:
-          - service: services/auth
-            service_key: auth
-          - service: services/orders
-            service_key: orders
-
     defaults:
       run:
-        working-directory: ${{ matrix.service }}
-
+        working-directory: services/auth
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: ${{ matrix.service }}/requirements.txt
-
+          cache-dependency-path: services/auth/requirements.txt
       - name: Install dependencies
         run: pip install -r requirements.txt
-
       - name: Run tests
         run: pytest --tb=short -q
         env:
-          JWT_PRIVATE_KEY: ${{ matrix.service == 'services/auth' && secrets.JWT_PRIVATE_KEY || '' }}
-          JWT_PUBLIC_KEY:  ${{ matrix.service == 'services/auth' && secrets.JWT_PUBLIC_KEY  || '' }}
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
+
+  test-orders:
+    needs: changes
+    if: needs.changes.outputs.orders == 'true'
+    name: test (services/orders)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/orders
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: services/orders/requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: pytest --tb=short -q
