@@ -42,8 +42,8 @@ graph TD
 | API Gateway | Nginx 1.25 | 8080 | Reverse proxy, roteamento por path |
 | Auth Service | FastAPI + Python 3.12 | 8001 | Autenticação, gestão de usuários, JWT RS256 |
 | Orders Service | FastAPI + Python 3.12 | 8002 | CRUD de pedidos, filtros por status |
-| Auth DB | PostgreSQL 16 | 3000 | Banco exclusivo do serviço de auth |
-| Orders DB | PostgreSQL 16 | 3001 | Banco exclusivo do serviço de pedidos |
+| Auth DB | PostgreSQL 16 | 5433 | Banco exclusivo do serviço de auth |
+| Orders DB | PostgreSQL 16 | 5434 | Banco exclusivo do serviço de pedidos |
 | Redis DB 0 | Redis 7 | 6379/0 | Cache do Orders Service |
 | Redis DB 1 | Redis 7 | 6379/1 | Cache do Auth Service |
 
