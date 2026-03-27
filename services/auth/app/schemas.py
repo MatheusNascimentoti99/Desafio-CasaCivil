@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, StrictStr, StrictBool, Field
+from pydantic import BaseModel, EmailStr, StrictBool, Field
 
 
 class UserCreate(BaseModel):

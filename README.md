@@ -169,11 +169,6 @@ curl -X PATCH http://localhost:8080/api/orders/{ORDER_ID}/status \
 - **Tipagem forte**: validators e serializers derivados dos type hints
 - **Leveza**: ideal para microsserviços, sem o "batteries-included" do Django que seria desnecessário
 
-### Por que SQLAlchemy 2.0 + asyncpg?
-- ORM robusto com suporte a async sessions
-- Migrações versionadas via Alembic
-- Compatível com o padrão async do FastAPI sem adaptadores
-
 ### Por que Nginx como API Gateway?
 - Reverse proxy leve e battle-tested
 - Roteamento simples por path prefix (`/api/auth/`, `/api/orders/`)
@@ -263,10 +258,9 @@ jobs:
 
 ### Implementaria
 - **Alembic migrations** versionadas (atualmente tabelas são criadas pelo ORM no startup)
+- **Catálogo e estoque** como serviços separados
 - **Comunicação assíncrona** entre serviços via Redis Pub/Sub ou RabbitMQ
 - **Observabilidade** com logs estruturados (structlog), métricas (Prometheus) e tracing (OpenTelemetry)
-- **Rate limiting** no Nginx
-- **SSL/TLS** termination no gateway
 
 ### Decisões que não tomei e por quê
 - **Não usei Django REST Framework**: seria overengineering para um PMV com microsserviços simples
