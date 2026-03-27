@@ -37,7 +37,7 @@ async function handleSubmit() {
 
 <template>
   <div>
-    <h1 class="text-h4">Entrar</h1>
+    <h1 class="text-h4 text-center">Entrar</h1>
     <p class="auth-subtitle">Acesse a plataforma de pedidos</p>
 
     <v-form class="auth-form" @submit.prevent="handleSubmit">
@@ -47,6 +47,7 @@ async function handleSubmit() {
         name="email"
         placeholder="voce@empresa.com"
         type="email"
+        autocomplete="email"
         variant="outlined"
       />
 

@@ -42,7 +42,7 @@ async function handleSubmit() {
 
 <template>
   <div>
-    <h1 class="text-h4">Novo registro</h1>
+    <h1 class="text-h4 text-center">Novo registro</h1>
     <p class="auth-subtitle">Crie sua conta para acessar o sistema</p>
 
     <v-form class="auth-form" @submit.prevent="handleSubmit">
