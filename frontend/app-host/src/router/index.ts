@@ -69,8 +69,24 @@ const router = createRouter({
   ],
 })
 
+function isTokenExpired(token: string): boolean {
+  try {
+    const part = token.split('.')[1]
+    if (!part) return true
+    const payload = JSON.parse(atob(part))
+    return typeof payload.exp === 'number' && payload.exp * 1000 < Date.now()
+  } catch {
+    return true
+  }
+}
+
 router.beforeEach((to) => {
   const token = localStorage.getItem('auth_token')
+
+  if (token && isTokenExpired(token)) {
+    localStorage.removeItem('auth_token')
+    return { name: 'login' }
+  }
 
   if (to.meta.requiresAuth && !token) {
     return { name: 'login' }
