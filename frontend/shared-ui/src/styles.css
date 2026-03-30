@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Rawline:wght@400;600;700&display=swap');
+
+:root {
+  --dsgov-blue-70: #071d41;
+  --dsgov-blue-60: #1351b4;
+  --dsgov-blue-50: #2670e8;
+  --dsgov-blue-10: #dbe8fb;
+  --dsgov-green-50: #168821;
+  --dsgov-red-50: #e52207;
+  --dsgov-yellow-30: #ffcd07;
+  --dsgov-yellow-20: #fff7db;
+  --dsgov-gray-90: #11181c;
+  --dsgov-gray-70: #495057;
+  --dsgov-gray-50: #636b73;
+  --dsgov-gray-20: #d9d9d9;
+  --dsgov-gray-10: #ededed;
+  --dsgov-bg: #f5f7fa;
+  --dsgov-surface: #ffffff;
+  --dsgov-text: var(--dsgov-gray-90);
+  --dsgov-radius: 8px;
+  --dsgov-shadow: 0 4px 12px rgba(7, 29, 65, 0.08);
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: 'Rawline', 'Segoe UI', 'Helvetica Neue', sans-serif;
+  color: var(--dsgov-text);
+  background: linear-gradient(180deg, #f8fafc 0%, var(--dsgov-bg) 220px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: var(--dsgov-blue-60);
+  font-weight: 600;
+}
+
+.dsgov-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.dsgov-top-strip {
+  height: 6px;
+  background: var(--dsgov-yellow-30);
+}
+
+.dsgov-government-line {
+  background: var(--dsgov-blue-70);
+  color: #fff;
+  font-size: 0.79rem;
+}
+
+.dsgov-government-line .content {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+}
+
+.dsgov-government-badge {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.dsgov-surface-section {
+  background: var(--dsgov-surface);
+  border: 1px solid var(--dsgov-gray-20);
+  border-radius: var(--dsgov-radius);
+}
+
+.dsgov-page-title {
+  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--dsgov-blue-60);
+}
+
+.dsgov-page-subtitle {
+  color: var(--dsgov-gray-70);
+  margin-top: 0.45rem;
+}
+
+.dsgov-card {
+  border: 1px solid var(--dsgov-gray-20);
+  border-radius: var(--dsgov-radius);
+  box-shadow: var(--dsgov-shadow);
+  background: var(--dsgov-surface);
+}
+
+.dsgov-toolbar-title {
+  font-size: 1.25rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--dsgov-blue-70);
+}
+
+.dsgov-toolbar-subtitle {
+  font-size: 0.94rem;
+  color: var(--dsgov-gray-50);
+  margin-top: 0.2rem;
+}
+
+.dsgov-table-head {
+  background: #eaf2fd;
+  color: var(--dsgov-blue-70);
+  font-weight: 700;
+}
+
+.v-field {
+  border-radius: 6px;
+}
+
+.v-btn {
+  font-weight: 600;
+}

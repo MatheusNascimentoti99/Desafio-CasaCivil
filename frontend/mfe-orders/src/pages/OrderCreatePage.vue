@@ -110,10 +110,13 @@ onMounted(loadCatalogProducts)
 </script>
 
 <template>
-  <v-card>
-    <v-card-title class="d-flex align-center ga-2">
+  <v-card class="dsgov-card create-card dsgov-shell">
+    <v-card-title class="create-header d-flex align-center ga-2">
       <v-btn icon="mdi-arrow-left" variant="text" @click="router.push({ name: 'orders' })" />
-      <span>Criar pedido</span>
+      <div>
+        <h1 class="dsgov-page-title">Criar pedido</h1>
+        <p class="dsgov-page-subtitle">Selecione itens do catálogo e registre uma nova solicitação</p>
+      </div>
     </v-card-title>
     <v-card-text>
       <v-form class="order-form" @submit.prevent="submitOrder">
@@ -127,7 +130,7 @@ onMounted(loadCatalogProducts)
         />
 
         <div class="items-header">
-          <h4>Itens</h4>
+          <h4>Itens do pedido</h4>
           <v-btn variant="outlined" @click="addItem">Adicionar item</v-btn>
         </div>
 
@@ -169,7 +172,7 @@ onMounted(loadCatalogProducts)
           </v-btn>
         </div>
 
-        <v-btn color="primary" type="submit" :loading="loading">
+        <v-btn color="primary" type="submit" :loading="loading" size="large">
           {{ loading ? 'Criando...' : 'Criar pedido' }}
         </v-btn>
 
@@ -186,10 +189,27 @@ onMounted(loadCatalogProducts)
   gap: 0.75rem;
 }
 
+.create-card {
+  margin-top: 0.7rem;
+}
+
+.create-header {
+  align-items: flex-start;
+}
+
+.create-header h1 {
+  margin-top: 0.1rem;
+}
+
 .items-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.items-header h4 {
+  margin: 0;
+  color: #071d41;
 }
 
 .item-row {
@@ -197,9 +217,18 @@ onMounted(loadCatalogProducts)
   grid-template-columns: minmax(0, 1fr) 120px auto;
   gap: 0.5rem;
   align-items: center;
+  padding: 0.6rem;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
 }
 
 @media (max-width: 900px) {
+  .items-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+
   .item-row {
     grid-template-columns: 1fr;
   }

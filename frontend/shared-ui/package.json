@@ -1,0 +1,13 @@
+{
+  "name": "@eccc/shared-ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./vuetify": {
+      "types": "./src/vuetify.d.ts",
+      "default": "./src/vuetify.js"
+    },
+    "./styles.css": "./src/styles.css"
+  }
+}

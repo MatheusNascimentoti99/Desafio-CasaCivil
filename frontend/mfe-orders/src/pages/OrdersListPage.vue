@@ -165,14 +165,18 @@ onMounted(loadOrders)
 </script>
 
 <template>
-  <v-container fluid class="pa-0">
-    <v-card>
-      <v-card-title class="d-flex justify-space-between align-center">
-        <div class="d-flex align-center ga-2">
-          <v-icon icon="mdi-package-variant-closed" color="primary" />
-          <span>Pedidos (MFE)</span>
+  <v-container fluid class="orders-page dsgov-shell">
+    <v-card class="dsgov-card">
+      <v-card-title class="header-row">
+        <div class="title-block">
+          <h1 class="dsgov-page-title">Pedidos</h1>
+          <p class="dsgov-page-subtitle">Acompanhe o fluxo operacional e atualize status de entrega</p>
+          <div class="d-flex align-center ga-2 mt-1">
+            <v-icon icon="mdi-package-variant-closed" color="primary" />
+            <span class="text-body-2">Módulo de pedidos</span>
+          </div>
         </div>
-        <div class="d-flex ga-2">
+        <div class="toolbar-actions">
           <v-select
             :model-value="selectedStatus"
             :items="statusOptions"
@@ -213,7 +217,7 @@ onMounted(loadOrders)
           </v-alert>
           <v-row v-else>
             <v-col v-for="order in orders" :key="order.id" cols="12">
-              <v-card class="order-card">
+              <v-card class="order-card dsgov-card">
                 <v-card-title class="d-flex justify-space-between align-center pb-1">
                   <div class="d-flex align-center ga-2">
                     <v-icon icon="mdi-account-circle-outline" color="primary" />
@@ -318,6 +322,28 @@ onMounted(loadOrders)
   gap: 0.75rem;
 }
 
+.orders-page {
+  padding-top: 0.7rem;
+}
+
+.header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+
+.title-block {
+  max-width: 520px;
+}
+
+.toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
 .pagination {
   margin-top: 1.25rem;
   display: flex;
@@ -327,15 +353,26 @@ onMounted(loadOrders)
 }
 
 .order-card {
-  border-left: 4px solid rgb(var(--v-theme-primary));
+  border-left: 4px solid #1351b4;
 }
 
 .item-row {
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid #d9d9d9;
   margin-bottom: 0.4rem;
 }
 
 .item-title {
   font-weight: 500;
+}
+
+@media (max-width: 920px) {
+  .header-row {
+    flex-direction: column;
+  }
+
+  .toolbar-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 </style>

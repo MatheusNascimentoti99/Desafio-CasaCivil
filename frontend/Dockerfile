@@ -1,23 +1,26 @@
 # Build stage
 FROM node:20-alpine AS builder
 
-WORKDIR /app
+ARG APP_DIR
+WORKDIR /workspace
 
 ARG VITE_ORDERS_MFE_URL
 ENV VITE_ORDERS_MFE_URL=${VITE_ORDERS_MFE_URL}
 
-COPY package*.json yarn.lock* ./
+COPY shared-ui ./shared-ui
+WORKDIR /workspace/app
+COPY ${APP_DIR}/package*.json ./
 
-RUN yarn install --frozen-lockfile
+RUN npm install
 
-COPY . .
+COPY ${APP_DIR}/ ./
 
-RUN yarn build
+RUN npm run build
 
 # Production stage
 FROM nginx:1.25-alpine
 
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /workspace/app/dist /usr/share/nginx/html
 
 EXPOSE 80
 

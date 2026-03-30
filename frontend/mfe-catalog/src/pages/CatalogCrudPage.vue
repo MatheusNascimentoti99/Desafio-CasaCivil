@@ -114,10 +114,20 @@ onMounted(loadProducts)
 </script>
 
 <template>
-  <v-container fluid class="pa-0 catalog-page">
+  <v-container fluid class="catalog-page dsgov-shell">
+    <div class="page-header">
+      <div>
+        <h1 class="dsgov-page-title">Catálogo de produtos</h1>
+        <p class="dsgov-page-subtitle">Gestão centralizada de itens disponíveis para pedidos</p>
+      </div>
+      <v-chip color="primary" variant="tonal" rounded="pill">
+        {{ products.length }} {{ products.length === 1 ? 'item' : 'itens' }}
+      </v-chip>
+    </div>
+
     <v-row>
       <v-col cols="12" md="4">
-        <v-card>
+        <v-card class="dsgov-card">
           <v-card-title>{{ formTitle }}</v-card-title>
           <v-card-text>
             <v-form class="catalog-form" @submit.prevent="submitProduct">
@@ -161,9 +171,9 @@ onMounted(loadProducts)
       </v-col>
 
       <v-col cols="12" md="8">
-        <v-card>
+        <v-card class="dsgov-card">
           <v-card-title class="d-flex align-center justify-space-between">
-            <span>Catálogo de produtos</span>
+            <span class="dsgov-toolbar-title">Catálogo de produtos</span>
             <v-btn variant="outlined" prepend-icon="mdi-refresh" :loading="loading" @click="loadProducts">
               Atualizar
             </v-btn>
@@ -177,7 +187,7 @@ onMounted(loadProducts)
               {{ successMessage }}
             </v-alert>
 
-            <v-table density="comfortable" hover>
+            <v-table density="comfortable" hover class="catalog-table">
               <thead>
                 <tr>
                   <th>EAN</th>
@@ -222,6 +232,18 @@ onMounted(loadProducts)
 </template>
 
 <style scoped>
+.catalog-page {
+  padding-top: 0.7rem;
+}
+
+.page-header {
+  margin-bottom: 1.1rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
 .catalog-form {
   display: grid;
   gap: 0.75rem;
@@ -231,5 +253,22 @@ onMounted(loadProducts)
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.catalog-table :deep(thead th) {
+  background: #eaf2fd;
+  color: #071d41;
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .page-header {
+    flex-direction: column;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 </style>

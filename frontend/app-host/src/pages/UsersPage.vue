@@ -66,22 +66,20 @@ onMounted(load)
 </script>
 
 <template>
-  <v-container fluid class="users-page">
-    <!-- Header -->
+  <v-container fluid class="users-page dsgov-shell">
     <div class="page-header mb-6">
       <div>
-        <h1 class="text-h5 font-weight-bold">Usuários</h1>
-        <p class="text-body-2 text-medium-emphasis mt-1">
+        <h1 class="dsgov-page-title">Usuários</h1>
+        <p class="dsgov-page-subtitle">
           Gerencie todos os usuários cadastrados na plataforma
         </p>
       </div>
-      <v-chip class="users-count" color="primary" variant="tonal" size="small">
+      <v-chip class="users-count" color="primary" variant="tonal" size="small" rounded="pill">
         {{ filteredUsers.length }} {{ filteredUsers.length === 1 ? 'usuário' : 'usuários' }}
       </v-chip>
     </div>
 
-    <!-- Filters -->
-    <v-card class="mb-4" elevation="1" rounded="lg">
+    <v-card class="mb-4 dsgov-card">
       <v-card-text class="pa-3">
         <v-row align="center" no-gutters>
           <v-col cols="12" sm="7" class="pe-sm-3 mb-3 mb-sm-0">
@@ -115,13 +113,11 @@ onMounted(load)
       </v-card-text>
     </v-card>
 
-    <!-- Error -->
     <v-alert v-if="errorMessage" type="error" variant="tonal" class="mb-4" rounded="lg">
       {{ errorMessage }}
     </v-alert>
 
-    <!-- Table -->
-    <v-card elevation="2" rounded="lg">
+    <v-card class="dsgov-card">
       <v-data-table
         :headers="headers"
         :items="filteredUsers"
@@ -131,7 +127,6 @@ onMounted(load)
         hover
         class="users-table"
       >
-        <!-- Name column with avatar -->
         <template #item.full_name="{ item }">
           <div class="d-flex align-center gap-3 py-1">
             <v-avatar color="primary" size="36" variant="tonal">
@@ -143,7 +138,6 @@ onMounted(load)
           </div>
         </template>
 
-        <!-- Status chip -->
         <template #item.is_active="{ item }">
           <v-chip
             :color="item.is_active ? 'success' : 'error'"
@@ -155,7 +149,6 @@ onMounted(load)
           </v-chip>
         </template>
 
-        <!-- Date column -->
         <template #item.created_at="{ item }">
           <span class="text-medium-emphasis text-body-2">{{ formatDate(item.created_at) }}</span>
         </template>
@@ -168,6 +161,7 @@ onMounted(load)
 .users-page {
   max-width: 1100px;
   margin: 0 auto;
+  padding-top: 0.5rem;
 }
 
 .page-header {
@@ -178,6 +172,23 @@ onMounted(load)
 
 .users-count {
   margin-top: 4px;
+}
+
+.users-table :deep(thead th) {
+  background: #f0f4fa;
+  color: #1351b4;
+  font-weight: 700;
+}
+
+.users-table :deep(tbody tr:hover) {
+  background: #f8fbff;
+}
+
+@media (max-width: 700px) {
+  .page-header {
+    flex-direction: column;
+    gap: 0.65rem;
+  }
 }
 
 </style>

@@ -42,8 +42,8 @@ async function handleSubmit() {
 
 <template>
   <div>
-    <h1 class="text-h4 text-center">Novo registro</h1>
-    <p class="auth-subtitle">Crie sua conta para acessar o sistema</p>
+    <h1 class="dsgov-page-title page-title">Novo registro</h1>
+    <p class="dsgov-page-subtitle auth-subtitle">Crie sua conta para acessar o sistema</p>
 
     <v-form class="auth-form" @submit.prevent="handleSubmit">
       <v-text-field
@@ -76,7 +76,7 @@ async function handleSubmit() {
         {{ errorMessage }}
       </v-alert>
 
-      <v-btn type="submit" :loading="loading" color="primary" block>
+      <v-btn type="submit" :loading="loading" color="primary" size="large" block>
         {{ loading ? 'Registrando...' : 'Registrar' }}
       </v-btn>
     </v-form>
@@ -89,13 +89,18 @@ async function handleSubmit() {
 </template>
 
 <style scoped>
+.page-title {
+  text-align: center;
+  margin: 0;
+}
+
 .auth-subtitle {
-  margin-top: 0.25rem;
-  color: #555;
+  margin-top: 0.3rem;
+  text-align: center;
 }
 
 .auth-form {
-  margin-top: 1rem;
+  margin-top: 1.1rem;
   display: grid;
   gap: 0.75rem;
 }
