@@ -71,7 +71,7 @@ class TestOrderItemCreate:
         """Testa que EAN inválido é rejeitado."""
         with pytest.raises(ValidationError) as exc_info:
             OrderItemCreate(
-                product_ean="ABC123",
+                product_ean="ABCDEFGH",
             )
         assert "String should match pattern" in str(exc_info.value)
 
