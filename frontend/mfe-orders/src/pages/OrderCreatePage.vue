@@ -136,7 +136,7 @@ onMounted(loadCatalogProducts)
         </v-alert>
 
         <div v-for="(item, index) in form.items" :key="index" class="item-row">
-          <v-select
+          <v-autocomplete
             v-model="item.product_ean"
             :items="productOptions"
             :loading="loadingCatalog"
