@@ -15,26 +15,36 @@ graph TD
 
     Client -->|":3000"| AppHost["app-host\nVue 3 Shell · Nginx :3000"]
     AppHost -->|"Module Federation"| MfeOrders["mfe-orders\nVue 3 Remote"]
+    AppHost -->|"Module Federation"| MfeCatalog["mfe-catalog\nVue 3 Remote"]
 
     AppHost -->|"HTTP REST + sessão"| Nginx["Nginx API Gateway :8080"]
     MfeOrders -->|"HTTP REST + sessão"| Nginx
+    MfeCatalog -->|"HTTP REST + sessão"| Nginx
 
     Nginx -->|"/api/bff/*"| BFF["BFF Service :8003"]
     BFF -->|"HTTP interno"| Auth["Auth Service :8001"]
     BFF -->|"HTTP interno"| Orders["Orders Service :8002"]
+    BFF -->|"HTTP interno"| Catalog["Catalog Service :8004"]
 
     Auth --> AuthDB[("auth_db <br> PostgreSQL :5433")]
-    Auth --> Redis[("Redis <br> DB 0:6379/0 <br> DB 1:6379/1")]
 
     Orders --> OrdersDB[("orders_db <br> PostgreSQL :5434")]
-    Orders --> Redis
+
+    Catalog --> CatalogDB[("catalog_db <br> PostgreSQL :5435")]
+    
+    Auth --> Redis0[("Redis <br> DB 0:6379/0")]
+    Orders --> Redis1[("Redis <br> DB 0:6379/1")]
+    Catalog --> Redis2[("Redis <br> DB 0:6379/2")]
 
     style AppHost   fill:#42b883,color:#fff,stroke:#33a06f
     style MfeOrders fill:#42b883,color:#fff,stroke:#33a06f
-    style Redis     fill:#dc382c,color:#fff,stroke:#b71c1c,stroke-width:3px
     style Nginx     fill:#009639,color:#fff
     style Auth      fill:#2563eb,color:#fff
     style Orders    fill:#2563eb,color:#fff
+    style Catalog   fill:#2563eb,color:#fff
+    style Redis0    fill:#dc382c,color:#fff,stroke:#b71c1c,stroke-width:3px
+    style Redis1    fill:#dc382c,color:#fff,stroke:#b71c1c,stroke-width:3px
+    style Redis2    fill:#dc382c,color:#fff,stroke:#b71c1c,stroke-width:3px
 ```
 
 ### Componentes
@@ -43,26 +53,30 @@ graph TD
 |------------|-----------|-------|-----------|
 | App Host | Vue 3 + Vite · Nginx | 3000 | Shell do frontend (Module Federation host) |
 | MFE Orders | Vue 3 + Vite · Nginx | 3001 | Micro-frontend de pedidos (remote) |
+| MFE Catalog | Vue 3 + Vite · Nginx | 3002 | Micro-frontend de catálogo (remote) |
+| Shared UI | CSS + tema Vuetify compartilhado | n/a | Pacote `@eccc/shared-ui` com estilos DSGov e configuração visual comum |
 | API Gateway | Nginx 1.25 | 8080 | Reverse proxy, roteamento por path |
 | BFF Service | FastAPI + Python 3.12 | 8003 | Backend for Frontend (sessão via cookie HttpOnly) |
 | Auth Service | FastAPI + Python 3.12 | 8001 | Autenticação, gestão de usuários, JWT RS256 |
 | Orders Service | FastAPI + Python 3.12 | 8002 | CRUD de pedidos, filtros por status |
+| Catalog Service | FastAPI + Python 3.12 | 8004 | CRUD de produtos por EAN |
 | Auth DB | PostgreSQL 16 | 5433 | Banco exclusivo do serviço de auth |
 | Orders DB | PostgreSQL 16 | 5434 | Banco exclusivo do serviço de pedidos |
+| Catalog DB | PostgreSQL 16 | 5435 | Banco exclusivo do serviço de catálogo |
 | Redis DB 0 | Redis 7 | 6379/0 | Cache do Orders Service |
 | Redis DB 1 | Redis 7 | 6379/1 | Cache do Auth Service |
-
+| Redis DB 2 | Redis 7 | 6379/2 | Cache do Catalog Service |
 ---
 
 ## 🖥️ Frontend
 
-A camada de apresentação é composta por dois aplicativos Vue 3 com **Module Federation (Vite)**:
+A camada de apresentação é composta por três aplicativos Vue 3 e um pacote compartilhado com **Module Federation (Vite)**:
 
 ### app-host — Shell da aplicação
 
 - Vue 3 + Vuetify 3 + Vue Router
 - Gerencia autenticação (login, registro, logout)
-- Carrega o `mfe-orders` dinamicamente em runtime
+- Carrega `mfe-orders` e `mfe-catalog` dinamicamente em runtime
 - **Guarda de rota baseada em sessão no BFF**: valida sessão via `/api/bff/session` e redireciona para `/login` quando a sessão não está válida
 
 **Páginas:**
@@ -75,11 +89,23 @@ A camada de apresentação é composta por dois aplicativos Vue 3 com **Module F
 | `/users` | UsersPage | Listagem de usuários com busca e filtro de status |
 | `/orders` | OrdersList (MFE) | Listagem de pedidos (carregado via Module Federation) |
 | `/orders/create` | OrderCreate (MFE) | Criação de pedido (carregado via Module Federation) |
+| `/catalog` | CatalogCrud (MFE) | Gestão de produtos do catálogo (carregado via Module Federation) |
 
 ### mfe-orders — Micro-frontend de pedidos
 
 - Vue 3 exposto como remote via Module Federation
 - Expõe `OrdersList` e `OrderCreate` para consumo pelo `app-host`
+
+### mfe-catalog — Micro-frontend de catálogo
+
+- Vue 3 exposto como remote via Module Federation
+- Expõe `CatalogCrud` para consumo pelo `app-host`
+
+### shared-ui — pacote compartilhado de interface
+
+- Pacote local consumido por `app-host`, `mfe-orders` e `mfe-catalog`
+- Centraliza tokens visuais DSGov, tipografia e defaults do Vuetify
+- Reduz duplicação de CSS/configuração entre os frontends
 
 ---
 
@@ -121,7 +147,12 @@ curl http://localhost:8080/api/bff/health
 | GET | `/api/bff/users/me` | Dados do usuário logado |
 | GET | `/api/bff/orders/` | Listar pedidos |
 | POST | `/api/bff/orders/` | Criar pedido |
-| PATCH | `/api/bff/orders/{id}/status` | Atualizar status do pedido |
+| PATCH | `/api/bff/orders/{id}/status` | Atualizar status do pedido (retorna pedido enriquecido com `product_name` quando disponível) |
+| GET | `/api/bff/catalog/products/` | Listar produtos do catálogo |
+| GET | `/api/bff/catalog/products/{ean}` | Obter produto por EAN |
+| POST | `/api/bff/catalog/products/` | Criar produto |
+| PUT | `/api/bff/catalog/products/{ean}` | Atualizar produto |
+| DELETE | `/api/bff/catalog/products/{ean}` | Remover produto |
 
 > Os endpoints de `Auth Service` e `Orders Service` continuam existindo internamente para comunicação entre serviços, mas não são mais expostos pelo API Gateway.
 
