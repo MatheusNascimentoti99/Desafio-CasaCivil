@@ -3,6 +3,7 @@ export type OrderStatus = 'pendente' | 'confirmado' | 'enviado' | 'entregue' | '
 export interface OrderItem {
   id?: string
   product_ean: string
+  product_name?: string
   quantity: number
   unit_price: number
 }

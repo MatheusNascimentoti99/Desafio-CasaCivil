@@ -9,6 +9,71 @@ from app.config import settings
 router = APIRouter(prefix="/api/bff", tags=["bff"])
 
 
+async def _load_product_names_by_ean(product_eans: set[str]) -> dict[str, str]:
+    if not product_eans:
+        return {}
+
+    names: dict[str, str] = {}
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        for ean in product_eans:
+            response = await client.get(f"{settings.CATALOG_SERVICE_URL}/api/catalog/products/{ean}")
+            if response.status_code >= 400:
+                continue
+
+            try:
+                payload = response.json()
+            except ValueError:
+                continue
+
+            name = payload.get("name")
+            if isinstance(name, str) and name:
+                names[ean] = name
+
+    return names
+
+
+async def _enrich_orders_with_product_name(orders_payload: Any) -> Any:
+    if not isinstance(orders_payload, list):
+        return orders_payload
+
+    product_eans: set[str] = set()
+    for order in orders_payload:
+        if not isinstance(order, dict):
+            continue
+
+        items = order.get("items", [])
+        if not isinstance(items, list):
+            continue
+
+        for item in items:
+            if isinstance(item, dict):
+                ean = item.get("product_ean")
+                if isinstance(ean, str) and ean:
+                    product_eans.add(ean)
+
+    product_names = await _load_product_names_by_ean(product_eans)
+    if not product_names:
+        return orders_payload
+
+    for order in orders_payload:
+        if not isinstance(order, dict):
+            continue
+
+        items = order.get("items", [])
+        if not isinstance(items, list):
+            continue
+
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+
+            ean = item.get("product_ean")
+            if isinstance(ean, str) and ean in product_names:
+                item["product_name"] = product_names[ean]
+
+    return orders_payload
+
+
 async def _request_json(
     method: str,
     service_base_url: str,
@@ -153,6 +218,7 @@ async def list_orders(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     status_filter: str | None = Query(None, alias="status"),
+    include_product: bool = Query(True, alias="includeProduct"),
 ):
     token = _get_session_token(request)
 
@@ -170,6 +236,14 @@ async def list_orders(
         token=token,
         params=params,
     )
+
+    if status_code < 400 and include_product:
+        try:
+            payload = await _enrich_orders_with_product_name(payload)
+        except Exception:
+            # Graceful degradation: list orders even if catalog enrichment fails.
+            pass
+
     return JSONResponse(status_code=status_code, content=payload)
 
 

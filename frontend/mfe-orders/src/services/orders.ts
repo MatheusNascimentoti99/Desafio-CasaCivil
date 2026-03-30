@@ -5,6 +5,7 @@ export interface ListOrdersParams {
   skip?: number
   limit?: number
   status?: OrderStatus
+  includeProduct?: boolean
 }
 
 export async function listOrders(params: ListOrdersParams = {}): Promise<Order[]> {
@@ -15,6 +16,8 @@ export async function listOrders(params: ListOrdersParams = {}): Promise<Order[]
   if (params.status) {
     requestUrl.searchParams.set('status', params.status)
   }
+
+  requestUrl.searchParams.set('includeProduct', String(params.includeProduct ?? true))
 
   const response = await fetch(requestUrl.toString(), {
     credentials: 'include',
