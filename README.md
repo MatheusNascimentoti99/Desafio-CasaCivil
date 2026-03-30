@@ -13,9 +13,9 @@ https://github.com/user-attachments/assets/66860695-3e0c-495c-9ec2-f88c8496ec6f
 graph TD
     Client["Cliente (Browser)"]
 
-    Client -->|":3000"| AppHost["app-host\nVue 3 Shell · Nginx :3000"]
-    AppHost -->|"Module Federation"| MfeOrders["mfe-orders\nVue 3 Remote"]
-    AppHost -->|"Module Federation"| MfeCatalog["mfe-catalog\nVue 3 Remote"]
+    Client -->|":3000"| AppHost["app-host <br/> Vue 3 Shell · Nginx :3000"]
+    AppHost -->|"Module Federation"| MfeOrders["mfe-orders <br/> Vue 3 Remote"]
+    AppHost -->|"Module Federation"| MfeCatalog["mfe-catalog <br/> Vue 3 Remote"]
 
     AppHost -->|"HTTP REST + sessão"| Nginx["Nginx API Gateway :8080"]
     MfeOrders -->|"HTTP REST + sessão"| Nginx
