@@ -7,7 +7,28 @@ function buildUrl(path: string): string {
 async function parseError(response: Response): Promise<string> {
   try {
     const body = await response.json()
-    return body?.detail ?? 'Erro inesperado ao chamar a API'
+    const detail = body?.detail
+
+    if (typeof detail === 'string' && detail) {
+      return detail
+    }
+
+    if (Array.isArray(detail) && detail.length > 0) {
+      return detail
+        .map((entry) => {
+          if (typeof entry?.msg !== 'string') {
+            return ''
+          }
+
+          const loc = Array.isArray(entry?.loc) ? entry.loc : []
+          const field = loc.length > 0 ? String(loc[loc.length - 1]) : ''
+          return field ? `${field}: ${entry.msg}` : entry.msg
+        })
+        .filter(Boolean)
+        .join(' | ')
+    }
+
+    return 'Erro inesperado ao chamar a API'
   } catch {
     return 'Erro inesperado ao chamar a API'
   }

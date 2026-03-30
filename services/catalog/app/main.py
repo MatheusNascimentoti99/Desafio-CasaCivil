@@ -1,7 +1,9 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.decorators import close_cache, init_cache
 from app.database import create_tables
@@ -34,6 +36,40 @@ app.add_middleware(
 )
 
 app.include_router(products.router)
+
+
+def _translate_validation_message(error: dict) -> str:
+    error_type = error.get("type")
+    ctx = error.get("ctx", {}) or {}
+
+    if error_type == "missing":
+        return "Campo obrigatório"
+    if error_type == "string_too_short":
+        return f"Texto deve ter no mínimo {ctx.get('min_length', 0)} caracteres"
+    if error_type == "string_too_long":
+        return f"Texto deve ter no máximo {ctx.get('max_length', 0)} caracteres"
+    if error_type == "string_pattern_mismatch":
+        return "Formato inválido"
+    if error_type == "greater_than":
+        return f"Valor deve ser maior que {ctx.get('gt')}"
+    if error_type == "greater_than_equal":
+        return f"Valor deve ser maior ou igual a {ctx.get('ge')}"
+    if error_type == "float_parsing" or error_type == "int_parsing":
+        return "Valor numérico inválido"
+
+    return "Valor inválido"
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(_request, exc: RequestValidationError):
+    translated_errors: list[dict] = []
+
+    for error in exc.errors():
+        translated = dict(error)
+        translated["msg"] = _translate_validation_message(error)
+        translated_errors.append(translated)
+
+    return JSONResponse(status_code=422, content={"detail": translated_errors})
 
 
 @app.get("/api/catalog/health", tags=["health"])
