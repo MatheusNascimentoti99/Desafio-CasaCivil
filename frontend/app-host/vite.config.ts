@@ -12,6 +12,10 @@ export default defineConfig(({ mode }) => {
     env.VITE_ORDERS_MFE_URL ||
     process.env.VITE_ORDERS_MFE_URL ||
     'http://localhost:3001/assets/remoteEntry.js'
+  const catalogRemoteUrl =
+    env.VITE_CATALOG_MFE_URL ||
+    process.env.VITE_CATALOG_MFE_URL ||
+    'http://localhost:3002/assets/remoteEntry.js'
 
   return {
   plugins: [
@@ -21,6 +25,10 @@ export default defineConfig(({ mode }) => {
       remotes: {
         orders: {
           external: ordersRemoteUrl,
+          externalType: 'url',
+        },
+        catalog: {
+          external: catalogRemoteUrl,
           externalType: 'url',
         },
       },

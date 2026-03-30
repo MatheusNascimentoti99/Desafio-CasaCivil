@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "VITE_ORDERS_MFE_URL=http://localhost:5174/assets/remoteEntry.js vite",
+    "dev": "VITE_ORDERS_MFE_URL=http://localhost:5174/assets/remoteEntry.js VITE_CATALOG_MFE_URL=http://localhost:5175/assets/remoteEntry.js vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",

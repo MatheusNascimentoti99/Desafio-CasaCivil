@@ -5,7 +5,13 @@ from app.config import settings
 from app.decorators import cached, invalidates_cache
 from app.database import get_db
 from app.schemas import ProductCreate, ProductResponse
-from app.services import create_product, get_product_by_ean, list_products
+from app.services import (
+    create_product,
+    delete_product,
+    get_product_by_ean,
+    list_products,
+    update_product,
+)
 
 router = APIRouter(prefix="/api/catalog/products", tags=["catalog"])
 
@@ -44,3 +50,39 @@ async def get_product(ean: str, db: AsyncSession = Depends(get_db)):
             detail="Produto não encontrado",
         )
     return product
+
+
+@router.put("/{ean}", response_model=ProductResponse)
+@invalidates_cache("catalog:products:list:*", "catalog:products:item:*")
+async def put_product(
+    ean: str,
+    payload: ProductCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    if payload.ean != ean:
+        existing_with_new_ean = await get_product_by_ean(db, payload.ean)
+        if existing_with_new_ean:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="EAN já cadastrado",
+            )
+
+    product = await update_product(db, ean, payload)
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Produto não encontrado",
+        )
+    return product
+
+
+@router.delete("/{ean}", status_code=status.HTTP_204_NO_CONTENT)
+@invalidates_cache("catalog:products:list:*", "catalog:products:item:*")
+async def remove_product(ean: str, db: AsyncSession = Depends(get_db)):
+    deleted = await delete_product(db, ean)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Produto não encontrado",
+        )
+    return None

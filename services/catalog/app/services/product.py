@@ -27,3 +27,26 @@ async def create_product(db: AsyncSession, payload: ProductCreate) -> Product:
     await db.commit()
     await db.refresh(product)
     return product
+
+
+async def update_product(db: AsyncSession, ean: str, payload: ProductCreate) -> Product | None:
+    product = await get_product_by_ean(db, ean)
+    if not product:
+        return None
+
+    product.ean = payload.ean
+    product.name = payload.name
+    product.unit_price = payload.unit_price
+    await db.commit()
+    await db.refresh(product)
+    return product
+
+
+async def delete_product(db: AsyncSession, ean: str) -> bool:
+    product = await get_product_by_ean(db, ean)
+    if not product:
+        return False
+
+    await db.delete(product)
+    await db.commit()
+    return True

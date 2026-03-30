@@ -1,7 +1,7 @@
 from typing import Any
 
 import httpx
-from fastapi import APIRouter, HTTPException, Query, Request, status
+from fastapi import APIRouter, HTTPException, Query, Request, Response, status
 from fastapi.responses import JSONResponse
 
 from app.config import settings
@@ -235,4 +235,31 @@ async def create_catalog_product(request: Request, body: dict[str, Any]):
         "/api/catalog/products/",
         body=body,
     )
+    return JSONResponse(status_code=status_code, content=payload)
+
+
+@router.put("/catalog/products/{ean}")
+async def update_catalog_product(ean: str, request: Request, body: dict[str, Any]):
+    _get_session_token(request)
+    status_code, payload = await _request_json(
+        "PUT",
+        settings.CATALOG_SERVICE_URL,
+        f"/api/catalog/products/{ean}",
+        body=body,
+    )
+    return JSONResponse(status_code=status_code, content=payload)
+
+
+@router.delete("/catalog/products/{ean}")
+async def delete_catalog_product(ean: str, request: Request):
+    _get_session_token(request)
+    status_code, payload = await _request_json(
+        "DELETE",
+        settings.CATALOG_SERVICE_URL,
+        f"/api/catalog/products/{ean}",
+    )
+
+    if status_code == status.HTTP_204_NO_CONTENT:
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+
     return JSONResponse(status_code=status_code, content=payload)

@@ -40,6 +40,12 @@ const router = createRouter({
           name: 'order-create',
           component: defineAsyncComponent(() => import('orders/OrderCreate')),
           meta: { requiresAuth: true },
+        },
+        {
+          path: '/catalog',
+          name: 'catalog',
+          component: defineAsyncComponent(() => import('catalog/CatalogCrud')),
+          meta: { requiresAuth: true },
         }
       ]
     },
