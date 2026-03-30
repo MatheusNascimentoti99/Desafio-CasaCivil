@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     CACHE_ENABLED: bool = True
     CACHE_TTL_ORDER: int = 600
 
+    # Integrations
+    CATALOG_SERVICE_URL: str = "http://catalog-service:8004"
+
     # Service
     SERVICE_NAME: str = "orders-service"
 

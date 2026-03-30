@@ -28,6 +28,23 @@ async def cleanup_orders(db: AsyncSession):
     yield
     await clear_orders_table(db)
 
+
+@pytest.fixture(autouse=True)
+def mock_catalog_prices(monkeypatch):
+    async def _mock_fetch_prices(product_eans: set[str]) -> dict[str, Decimal]:
+        return {
+            "7894900011517": Decimal("1500.00"),
+            "7894900011524": Decimal("50.00"),
+            "7894900011531": Decimal("200.00"),
+            "7894900011548": Decimal("100.00"),
+            "7894900011555": Decimal("25.50"),
+        }
+
+    monkeypatch.setattr(
+        "app.services.order.fetch_products_prices_by_ean",
+        _mock_fetch_prices,
+    )
+
 @pytest.fixture
 def order_data():
     """Fixture que retorna dados para criar um pedido."""
@@ -35,14 +52,12 @@ def order_data():
         customer_name="João Silva",
         items=[
             OrderItemCreate(
-                product_name="Notebook",
+                product_ean="7894900011517",
                 quantity=1,
-                unit_price=Decimal("1500.00"),
             ),
             OrderItemCreate(
-                product_name="Mouse",
+                product_ean="7894900011524",
                 quantity=2,
-                unit_price=Decimal("50.00"),
             ),
         ],
     )
@@ -93,9 +108,8 @@ async def test_get_orders_list(db: AsyncSession, order_data, user_email):
         customer_name="Maria Santos",
         items=[
             OrderItemCreate(
-                product_name="Teclado",
+                product_ean="7894900011531",
                 quantity=1,
-                unit_price=Decimal("200.00"),
             ),
         ],
     )
@@ -209,19 +223,16 @@ async def test_order_total_calculation(db: AsyncSession, user_email):
         customer_name="Test Customer",
         items=[
             OrderItemCreate(
-                product_name="Item A",
+                product_ean="7894900011548",
                 quantity=2,
-                unit_price=Decimal("100.00"),
             ),
             OrderItemCreate(
-                product_name="Item B",
+                product_ean="7894900011524",
                 quantity=3,
-                unit_price=Decimal("50.00"),
             ),
             OrderItemCreate(
-                product_name="Item C",
+                product_ean="7894900011555",
                 quantity=1,
-                unit_price=Decimal("25.50"),
             ),
         ],
     )

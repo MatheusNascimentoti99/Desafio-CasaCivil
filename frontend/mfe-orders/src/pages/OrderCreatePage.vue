@@ -18,18 +18,16 @@ const form = reactive<CreateOrderPayload>({
   customer_name: '',
   items: [
     {
-      product_name: '',
+      product_ean: '',
       quantity: 1,
-      unit_price: 0,
     },
   ],
 })
 
 function addItem() {
   form.items.push({
-    product_name: '',
+    product_ean: '',
     quantity: 1,
-    unit_price: 0,
   })
 }
 
@@ -45,9 +43,8 @@ function resetForm() {
   form.customer_name = ''
   form.items = [
     {
-      product_name: '',
+      product_ean: '',
       quantity: 1,
-      unit_price: 0,
     },
   ]
 }
@@ -61,9 +58,8 @@ async function submitOrder() {
     const payload: CreateOrderPayload = {
       customer_name: form.customer_name.trim(),
       items: form.items.map((item) => ({
-        product_name: item.product_name.trim(),
+        product_ean: item.product_ean.trim(),
         quantity: Number(item.quantity),
-        unit_price: Number(item.unit_price),
       })),
     }
 
@@ -104,12 +100,12 @@ async function submitOrder() {
 
         <div v-for="(item, index) in form.items" :key="index" class="item-row">
           <v-text-field
-            v-model="item.product_name"
-            label="Produto"
-            maxlength="255"
+            v-model="item.product_ean"
+            label="EAN do produto"
+            maxlength="14"
             required
             variant="outlined"
-            placeholder="Nome do produto"
+            placeholder="Ex: 7894900011517"
             hideDetails="auto"
           />
 
@@ -122,18 +118,6 @@ async function submitOrder() {
             required
             variant="outlined"
             hideDetails="auto"
-          />
-
-          <v-text-field
-            v-model.number="item.unit_price"
-            label="Valor unit."
-            type="number"
-            min="0"
-            step="0.01"
-            required
-            variant="outlined"
-            hideDetails="auto"
-            prefix="R$"
           />
 
           <v-btn
@@ -171,7 +155,7 @@ async function submitOrder() {
 
 .item-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 120px 160px auto;
+  grid-template-columns: minmax(0, 1fr) 120px auto;
   gap: 0.5rem;
   align-items: center;
 }

@@ -197,3 +197,42 @@ async def patch_order_status(order_id: str, request: Request, body: dict[str, An
         body=body,
     )
     return JSONResponse(status_code=status_code, content=payload)
+
+
+@router.get("/catalog/products/")
+async def list_catalog_products(
+    request: Request,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=100),
+):
+    _get_session_token(request)
+    status_code, payload = await _request_json(
+        "GET",
+        settings.CATALOG_SERVICE_URL,
+        "/api/catalog/products/",
+        params={"skip": skip, "limit": limit},
+    )
+    return JSONResponse(status_code=status_code, content=payload)
+
+
+@router.get("/catalog/products/{ean}")
+async def get_catalog_product(ean: str, request: Request):
+    _get_session_token(request)
+    status_code, payload = await _request_json(
+        "GET",
+        settings.CATALOG_SERVICE_URL,
+        f"/api/catalog/products/{ean}",
+    )
+    return JSONResponse(status_code=status_code, content=payload)
+
+
+@router.post("/catalog/products/")
+async def create_catalog_product(request: Request, body: dict[str, Any]):
+    _get_session_token(request)
+    status_code, payload = await _request_json(
+        "POST",
+        settings.CATALOG_SERVICE_URL,
+        "/api/catalog/products/",
+        body=body,
+    )
+    return JSONResponse(status_code=status_code, content=payload)

@@ -1,9 +1,11 @@
 import uuid
 from decimal import Decimal
 
+import httpx
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.models import Order, OrderItem, OrderStatus
 from app.schemas import OrderCreate
 
@@ -51,16 +53,21 @@ async def get_order_by_id(db: AsyncSession, order_id: uuid.UUID) -> Order | None
 async def create_order(
     db: AsyncSession, order_in: OrderCreate, user_email: str
 ) -> Order:
+    product_prices = await fetch_products_prices_by_ean(
+        {item.product_ean for item in order_in.items}
+    )
+
     # Calculate total from items
     total = Decimal("0")
     items = []
     for item_data in order_in.items:
-        total += item_data.unit_price * item_data.quantity
+        unit_price = product_prices[item_data.product_ean]
+        total += unit_price * item_data.quantity
         items.append(
             OrderItem(
-                product_name=item_data.product_name,
+                product_ean=item_data.product_ean,
                 quantity=item_data.quantity,
-                unit_price=item_data.unit_price,
+                unit_price=unit_price,
             )
         )
 
@@ -74,6 +81,27 @@ async def create_order(
     await db.commit()
     await db.refresh(order)
     return order
+
+
+async def fetch_products_prices_by_ean(product_eans: set[str]) -> dict[str, Decimal]:
+    prices: dict[str, Decimal] = {}
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        for ean in product_eans:
+            response = await client.get(
+                f"{settings.CATALOG_SERVICE_URL}/api/catalog/products/{ean}"
+            )
+
+            if response.status_code == 404:
+                raise ValueError(f"Produto com EAN {ean} não encontrado no catálogo")
+
+            if response.status_code >= 400:
+                raise ValueError("Falha ao consultar catálogo de produtos")
+
+            payload = response.json()
+            prices[ean] = Decimal(str(payload["unit_price"]))
+
+    return prices
 
 
 async def update_order_status(

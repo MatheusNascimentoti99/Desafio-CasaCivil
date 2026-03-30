@@ -247,7 +247,7 @@ onMounted(loadOrders)
                         <v-icon icon="mdi-cube-outline" size="18" class="mr-2" />
                       </template>
 
-                      <v-list-item-title class="item-title">{{ item.product_name }}</v-list-item-title>
+                      <v-list-item-title class="item-title">EAN {{ item.product_ean }}</v-list-item-title>
                       <v-list-item-subtitle>
                         <v-icon icon="mdi-counter" size="14" class="mr-1" />
                         {{ item.quantity }}

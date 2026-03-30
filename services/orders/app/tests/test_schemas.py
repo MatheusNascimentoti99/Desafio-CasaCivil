@@ -37,19 +37,16 @@ class TestOrderItemCreate:
     def test_valid_order_item_create(self):
         """Testa criação válida de um item de pedido."""
         item = OrderItemCreate(
-            product_name="Notebook",
+            product_ean="7894900011517",
             quantity=1,
-            unit_price=Decimal("1500.00"),
         )
-        assert item.product_name == "Notebook"
+        assert item.product_ean == "7894900011517"
         assert item.quantity == 1
-        assert item.unit_price == Decimal("1500.00")
 
     def test_order_item_create_with_defaults(self):
         """Testa que quantidade padrão é 1."""
         item = OrderItemCreate(
-            product_name="Mouse",
-            unit_price=Decimal("50.00"),
+            product_ean="7894900011524",
         )
         assert item.quantity == 1
 
@@ -57,9 +54,8 @@ class TestOrderItemCreate:
         """Testa que quantidade não pode ser zero."""
         with pytest.raises(ValidationError) as exc_info:
             OrderItemCreate(
-                product_name="Mouse",
+                product_ean="7894900011524",
                 quantity=0,
-                unit_price=Decimal("50.00"),
             )
         assert "greater than or equal to 1" in str(exc_info.value)
 
@@ -67,26 +63,23 @@ class TestOrderItemCreate:
         """Testa que quantidade não pode ser negativa."""
         with pytest.raises(ValidationError):
             OrderItemCreate(
-                product_name="Mouse",
+                product_ean="7894900011524",
                 quantity=-1,
-                unit_price=Decimal("50.00"),
             )
 
-    def test_order_item_create_invalid_unit_price_negative(self):
-        """Testa que preço não pode ser negativo."""
+    def test_order_item_create_invalid_ean(self):
+        """Testa que EAN inválido é rejeitado."""
         with pytest.raises(ValidationError) as exc_info:
             OrderItemCreate(
-                product_name="Mouse",
-                quantity=1,
-                unit_price=Decimal("-50.00"),
+                product_ean="ABC123",
             )
+        assert "String should match pattern" in str(exc_info.value)
 
     def test_order_item_create_missing_required_field(self):
-        """Testa que product_name é obrigatório."""
+        """Testa que product_ean é obrigatório."""
         with pytest.raises(ValidationError):
             OrderItemCreate(
                 quantity=1,
-                unit_price=Decimal("50.00"),
             )
 
 
@@ -98,12 +91,12 @@ class TestOrderItemResponse:
         item_id = uuid.uuid4()
         item = OrderItemResponse(
             id=item_id,
-            product_name="Notebook",
+            product_ean="7894900011517",
             quantity=1,
             unit_price=Decimal("1500.00"),
         )
         assert item.id == item_id
-        assert item.product_name == "Notebook"
+        assert item.product_ean == "7894900011517"
         assert item.quantity == 1
         assert item.unit_price == Decimal("1500.00")
 
@@ -121,14 +114,12 @@ class TestOrderCreate:
             customer_name="João Silva",
             items=[
                 OrderItemCreate(
-                    product_name="Notebook",
+                    product_ean="7894900011517",
                     quantity=1,
-                    unit_price=Decimal("1500.00"),
                 ),
                 OrderItemCreate(
-                    product_name="Mouse",
+                    product_ean="7894900011524",
                     quantity=2,
-                    unit_price=Decimal("50.00"),
                 ),
             ],
         )
@@ -141,9 +132,8 @@ class TestOrderCreate:
             customer_name="Maria",
             items=[
                 OrderItemCreate(
-                    product_name="Teclado",
+                    product_ean="7894900011531",
                     quantity=1,
-                    unit_price=Decimal("200.00"),
                 ),
             ],
         )
@@ -164,9 +154,8 @@ class TestOrderCreate:
             OrderCreate(
                 items=[
                     OrderItemCreate(
-                        product_name="Notebook",
+                        product_ean="7894900011517",
                         quantity=1,
-                        unit_price=Decimal("1500.00"),
                     ),
                 ],
             )
@@ -195,13 +184,13 @@ class TestOrderResponse:
             items=[
                 OrderItemResponse(
                     id=uuid.uuid4(),
-                    product_name="Notebook",
+                    product_ean="7894900011517",
                     quantity=1,
                     unit_price=Decimal("1500.00"),
                 ),
                 OrderItemResponse(
                     id=uuid.uuid4(),
-                    product_name="Mouse",
+                    product_ean="7894900011524",
                     quantity=2,
                     unit_price=Decimal("50.00"),
                 ),

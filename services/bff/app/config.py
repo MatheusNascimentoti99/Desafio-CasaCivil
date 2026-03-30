@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     AUTH_SERVICE_URL: str = "http://auth-service:8001"
     ORDERS_SERVICE_URL: str = "http://orders-service:8002"
+    CATALOG_SERVICE_URL: str = "http://catalog-service:8004"
 
     BFF_COOKIE_NAME: str = "bff_session"
     BFF_COOKIE_SECURE: bool = False

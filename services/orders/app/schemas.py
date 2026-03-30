@@ -15,14 +15,13 @@ class OrderStatus(str, enum.Enum):
 
 
 class OrderItemCreate(BaseModel):
-    product_name: str = Field(min_length=2, max_length=255)
+    product_ean: str = Field(min_length=8, max_length=14, pattern=r"^\d{8,14}$")
     quantity: int = Field(ge=1, default=1)
-    unit_price: Decimal = Field(gt=0)
 
 
 class OrderItemResponse(BaseModel):
     id: uuid.UUID
-    product_name: str = Field(min_length=2, max_length=255)
+    product_ean: str = Field(min_length=8, max_length=14, pattern=r"^\d{8,14}$")
     quantity: int
     unit_price: PositiveFloat
 

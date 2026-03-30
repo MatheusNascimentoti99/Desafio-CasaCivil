@@ -59,7 +59,7 @@ class OrderItem(Base):
     order_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"), nullable=False
     )
-    product_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    product_ean: Mapped[str] = mapped_column(String(14), nullable=False, index=True)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     unit_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
 

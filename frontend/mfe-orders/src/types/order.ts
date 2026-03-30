@@ -2,7 +2,7 @@ export type OrderStatus = 'pendente' | 'confirmado' | 'enviado' | 'entregue' | '
 
 export interface OrderItem {
   id?: string
-  product_name: string
+  product_ean: string
   quantity: number
   unit_price: number
 }
@@ -25,8 +25,7 @@ export interface UpdateOrderStatusPayload {
 export interface CreateOrderPayload {
   customer_name: string
   items: Array<{
-    product_name: string
+    product_ean: string
     quantity: number
-    unit_price: number
   }>
 }
