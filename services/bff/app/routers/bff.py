@@ -74,6 +74,17 @@ async def _enrich_orders_with_product_name(orders_payload: Any) -> Any:
     return orders_payload
 
 
+async def _enrich_single_order_with_product_name(order_payload: Any) -> Any:
+    if not isinstance(order_payload, dict):
+        return order_payload
+
+    enriched_orders = await _enrich_orders_with_product_name([order_payload])
+    if isinstance(enriched_orders, list) and enriched_orders:
+        return enriched_orders[0]
+
+    return order_payload
+
+
 async def _request_json(
     method: str,
     service_base_url: str,
@@ -270,6 +281,14 @@ async def patch_order_status(order_id: str, request: Request, body: dict[str, An
         token=token,
         body=body,
     )
+
+    if status_code < 400:
+        try:
+            payload = await _enrich_single_order_with_product_name(payload)
+        except Exception:
+            # Graceful degradation: return updated order even if catalog enrichment fails.
+            pass
+
     return JSONResponse(status_code=status_code, content=payload)
 
 
