@@ -2,6 +2,9 @@
 
 Plataforma interna de gestão de pedidos para e-commerce (E-Commerce Casa Cívil), construída com arquitetura de micro-frontends (Vue 3 + Module Federation) e microsserviços (FastAPI), comunicando-se via Nginx como API Gateway.
 
+https://github.com/user-attachments/assets/66860695-3e0c-495c-9ec2-f88c8496ec6f
+
+
 ---
 
 ## Arquitetura
