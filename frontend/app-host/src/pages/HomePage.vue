@@ -10,21 +10,13 @@ const loading = ref(false)
 const errorMessage = ref('')
 
 async function loadUser() {
-  const token = localStorage.getItem('auth_token')
-
-  if (!token) {
-    router.push({ name: 'login' })
-    return
-  }
-
   loading.value = true
   errorMessage.value = ''
 
   try {
-    user.value = await getCurrentUser(token)
+    user.value = await getCurrentUser()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : 'Falha ao carregar usuário'
-    localStorage.removeItem('auth_token')
     router.push({ name: 'login' })
   } finally {
     loading.value = false

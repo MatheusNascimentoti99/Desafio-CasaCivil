@@ -14,12 +14,13 @@
 </template>
 
 <script lang="ts" setup>
-import { useRouter } from 'vue-router';
+import { logoutUser } from '@/services/auth'
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
+const router = useRouter()
 
-function logout() {
-  localStorage.removeItem('auth_token')
+async function logout() {
+  await logoutUser()
   router.push({ name: 'login' })
 }
 </script>

@@ -13,11 +13,12 @@ graph TD
     Client -->|":3000"| AppHost["app-host\nVue 3 Shell · Nginx :3000"]
     AppHost -->|"Module Federation"| MfeOrders["mfe-orders\nVue 3 Remote"]
 
-    AppHost -->|"HTTP REST + JWT"| Nginx["Nginx API Gateway :8080"]
-    MfeOrders -->|"HTTP REST + JWT"| Nginx
+    AppHost -->|"HTTP REST + sessão"| Nginx["Nginx API Gateway :8080"]
+    MfeOrders -->|"HTTP REST + sessão"| Nginx
 
-    Nginx -->|"/api/auth/*"| Auth["Auth Service :8001"]
-    Nginx -->|"/api/orders/*"| Orders["Orders Service :8002"]
+    Nginx -->|"/api/bff/*"| BFF["BFF Service :8003"]
+    BFF -->|"HTTP interno"| Auth["Auth Service :8001"]
+    BFF -->|"HTTP interno"| Orders["Orders Service :8002"]
 
     Auth --> AuthDB[("auth_db <br> PostgreSQL :5433")]
     Auth --> Redis[("Redis <br> DB 0:6379/0 <br> DB 1:6379/1")]
@@ -40,6 +41,7 @@ graph TD
 | App Host | Vue 3 + Vite · Nginx | 3000 | Shell do frontend (Module Federation host) |
 | MFE Orders | Vue 3 + Vite · Nginx | 3001 | Micro-frontend de pedidos (remote) |
 | API Gateway | Nginx 1.25 | 8080 | Reverse proxy, roteamento por path |
+| BFF Service | FastAPI + Python 3.12 | 8003 | Backend for Frontend (sessão via cookie HttpOnly) |
 | Auth Service | FastAPI + Python 3.12 | 8001 | Autenticação, gestão de usuários, JWT RS256 |
 | Orders Service | FastAPI + Python 3.12 | 8002 | CRUD de pedidos, filtros por status |
 | Auth DB | PostgreSQL 16 | 5433 | Banco exclusivo do serviço de auth |
@@ -58,7 +60,7 @@ A camada de apresentação é composta por dois aplicativos Vue 3 com **Module F
 - Vue 3 + Vuetify 3 + Vue Router
 - Gerencia autenticação (login, registro, logout)
 - Carrega o `mfe-orders` dinamicamente em runtime
-- **Guarda de rota com verificação de expiração JWT**: decodifica o claim `exp` do token sem dependências externas e redireciona para `/login` se expirado
+- **Guarda de rota baseada em sessão no BFF**: valida sessão via `/api/bff/session` e redireciona para `/login` quando a sessão não está válida
 
 **Páginas:**
 
@@ -92,55 +94,50 @@ docker compose up --build -d
 ### Verificar saúde dos serviços
 
 ```bash
-curl http://localhost:8080/api/auth/health
-curl http://localhost:8080/api/orders/health
+curl http://localhost:8080/api/bff/health
 ```
 
 ### Acessar a aplicação
 
 - **Frontend:** http://localhost:3000
-- **Auth API Docs:** http://localhost:8080/api/auth/docs
-- **Orders API Docs:** http://localhost:8080/api/orders/docs
+- **BFF API Docs:** http://localhost:8080/api/bff/docs
 
 ---
 
 ## 📡 Endpoints da API
 
-### Auth Service (`/api/auth`)
+### BFF Service (`/api/bff`)
 
-| Método | Endpoint | Descrição | Autenticação |
-|--------|----------|-----------|-------------|
-| POST | `/api/auth/register` | Registrar novo usuário | Não |
-| POST | `/api/auth/login` | Login (retorna JWT) | Não |
-| GET | `/api/auth/users` | Listar todos os usuários | JWT |
-| GET | `/api/auth/users/me` | Dados do usuário logado | JWT |
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/api/bff/auth/register` | Registro de usuário (proxy auth) |
+| POST | `/api/bff/auth/login` | Login e criação de cookie HttpOnly |
+| POST | `/api/bff/auth/logout` | Encerrar sessão |
+| GET | `/api/bff/session` | Validar sessão e obter usuário atual |
+| GET | `/api/bff/users` | Listar usuários autenticado via sessão |
+| GET | `/api/bff/users/me` | Dados do usuário logado |
+| GET | `/api/bff/orders/` | Listar pedidos |
+| POST | `/api/bff/orders/` | Criar pedido |
+| PATCH | `/api/bff/orders/{id}/status` | Atualizar status do pedido |
 
-### Orders Service (`/api/orders`)
-
-| Método | Endpoint | Descrição | Autenticação |
-|--------|----------|-----------|-------------|
-| GET | `/api/orders/` | Listar pedidos (filtro por status) | JWT |
-| POST | `/api/orders/` | Criar pedido | JWT |
-| GET | `/api/orders/{id}` | Consultar pedido por ID | JWT |
-| PATCH | `/api/orders/{id}/status` | Atualizar status do pedido | JWT |
+> Os endpoints de `Auth Service` e `Orders Service` continuam existindo internamente para comunicação entre serviços, mas não são mais expostos pelo API Gateway.
 
 ### Exemplo de uso
 
 ```bash
-# 1. Registrar usuário
-curl -X POST http://localhost:8080/api/auth/register \
+# 1. Registrar usuário (via BFF)
+curl -X POST http://localhost:8080/api/bff/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@empresa.com","password":"senha123","full_name":"Admin"}'
 
-# 2. Login
-TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
+# 2. Login e persistência de cookie de sessão
+curl -i -c cookies.txt -X POST http://localhost:8080/api/bff/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@empresa.com","password":"senha123"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+  -d '{"email":"admin@empresa.com","password":"senha123"}'
 
-# 3. Criar pedido
-curl -X POST http://localhost:8080/api/orders/ \
+# 3. Criar pedido (usando cookie de sessão)
+curl -b cookies.txt -X POST http://localhost:8080/api/bff/orders/ \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
   -d '{
     "customer_name": "Cliente A",
     "items": [
@@ -150,13 +147,15 @@ curl -X POST http://localhost:8080/api/orders/ \
   }'
 
 # 4. Listar pedidos
-curl http://localhost:8080/api/orders/ -H "Authorization: Bearer $TOKEN"
+curl -b cookies.txt http://localhost:8080/api/bff/orders/
 
 # 5. Atualizar status
-curl -X PATCH http://localhost:8080/api/orders/{ORDER_ID}/status \
+curl -b cookies.txt -X PATCH http://localhost:8080/api/bff/orders/{ORDER_ID}/status \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
   -d '{"status": "confirmado"}'
+
+# 6. Encerrar sessão
+curl -b cookies.txt -X POST http://localhost:8080/api/bff/auth/logout
 ```
 
 ---
@@ -171,7 +170,7 @@ curl -X PATCH http://localhost:8080/api/orders/{ORDER_ID}/status \
 
 ### Por que Nginx como API Gateway?
 - Reverse proxy leve e battle-tested
-- Roteamento simples por path prefix (`/api/auth/`, `/api/orders/`)
+- Ponto único de entrada para o frontend, expondo apenas o BFF (`/api/bff/`)
 - Facilmente extensível para load balancing, rate limiting, SSL termination
 
 ### Por que JWT RS256 (assimétrico)?
@@ -224,9 +223,9 @@ sequenceDiagram
 
 > Se o Redis estiver indisponível, o app continua funcionando normalmente via PostgreSQL (graceful degradation).
 
-### Guarda de expiração JWT (frontend)
+### Sessão no frontend via BFF
 
-O Vue Router decodifica o claim `exp` do JWT diretamente no `beforeEach` sem bibliotecas externas. Se o token estiver expirado, ele é removido do `localStorage` e o usuário é redirecionado para `/login`.
+O frontend não armazena mais JWT em `localStorage`. A autenticação é feita com cookie HttpOnly emitido pelo BFF, e o Vue Router valida a sessão pelo endpoint `/api/bff/session`.
 
 ---
 

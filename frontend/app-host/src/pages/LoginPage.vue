@@ -24,8 +24,7 @@ async function handleSubmit() {
   loading.value = true
 
   try {
-    const token = await loginUser(form)
-    localStorage.setItem('auth_token', token.access_token)
+    await loginUser(form)
     router.push({ name: 'home' })
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : 'Falha no login'

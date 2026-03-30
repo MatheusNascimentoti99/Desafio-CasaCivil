@@ -1,5 +1,5 @@
 import type { CreateOrderPayload, Order, OrderStatus } from '../types/order'
-import { buildUrl, getAuthHeaders, parseError } from './auth'
+import { buildUrl, parseError } from './auth'
 
 export interface ListOrdersParams {
   skip?: number
@@ -8,7 +8,7 @@ export interface ListOrdersParams {
 }
 
 export async function listOrders(params: ListOrdersParams = {}): Promise<Order[]> {
-  const requestUrl = new URL(buildUrl('/api/orders/'))
+  const requestUrl = new URL(buildUrl('/orders/'))
   requestUrl.searchParams.set('skip', String(params.skip ?? 0))
   requestUrl.searchParams.set('limit', String(params.limit ?? 50))
 
@@ -17,9 +17,7 @@ export async function listOrders(params: ListOrdersParams = {}): Promise<Order[]
   }
 
   const response = await fetch(requestUrl.toString(), {
-    headers: {
-      ...getAuthHeaders(),
-    },
+    credentials: 'include',
   })
 
   if (!response.ok) {
@@ -30,12 +28,12 @@ export async function listOrders(params: ListOrdersParams = {}): Promise<Order[]
 }
 
 export async function createOrder(payload: CreateOrderPayload): Promise<Order> {
-  const response = await fetch(buildUrl('/api/orders/'), {
+  const response = await fetch(buildUrl('/orders/'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...getAuthHeaders(),
     },
+    credentials: 'include',
     body: JSON.stringify(payload),
   })
 
@@ -47,12 +45,12 @@ export async function createOrder(payload: CreateOrderPayload): Promise<Order> {
 }
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<Order> {
-  const response = await fetch(buildUrl(`/api/orders/${orderId}/status`), {
+  const response = await fetch(buildUrl(`/orders/${orderId}/status`), {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      ...getAuthHeaders(),
     },
+    credentials: 'include',
     body: JSON.stringify({ status }),
   })
 

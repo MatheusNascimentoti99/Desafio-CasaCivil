@@ -6,6 +6,7 @@ import RegisterPage from '@/pages/RegisterPage.vue'
 import UsersPage from '@/pages/UsersPage.vue'
 import MainLayout from '@/components/MainLayout.vue'
 import { defineAsyncComponent } from 'vue'
+import { getSession } from '@/services/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -69,30 +70,25 @@ const router = createRouter({
   ],
 })
 
-function isTokenExpired(token: string): boolean {
-  try {
-    const part = token.split('.')[1]
-    if (!part) return true
-    const payload = JSON.parse(atob(part))
-    return typeof payload.exp === 'number' && payload.exp * 1000 < Date.now()
-  } catch {
+router.beforeEach(async (to) => {
+  if (!to.meta.requiresAuth && !to.meta.guestOnly) {
     return true
   }
-}
 
-router.beforeEach((to) => {
-  const token = localStorage.getItem('auth_token')
+  let hasSession = false
 
-  if (token && isTokenExpired(token)) {
-    localStorage.removeItem('auth_token')
+  try {
+    await getSession()
+    hasSession = true
+  } catch {
+    hasSession = false
+  }
+
+  if (to.meta.requiresAuth && !hasSession) {
     return { name: 'login' }
   }
 
-  if (to.meta.requiresAuth && !token) {
-    return { name: 'login' }
-  }
-
-  if (to.meta.guestOnly && token) {
+  if (to.meta.guestOnly && hasSession) {
     return { name: 'home' }
   }
 

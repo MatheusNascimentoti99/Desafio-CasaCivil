@@ -19,19 +19,14 @@ const headers = [
 ]
 
 async function load() {
-  const token = localStorage.getItem('auth_token')
-  if (!token) {
-    router.push({ name: 'login' })
-    return
-  }
-
   loading.value = true
   errorMessage.value = ''
 
   try {
-    users.value = await listUsers(token)
+    users.value = await listUsers()
   } catch (err) {
     errorMessage.value = err instanceof Error ? err.message : 'Falha ao carregar usuários'
+    router.push({ name: 'login' })
   } finally {
     loading.value = false
   }
