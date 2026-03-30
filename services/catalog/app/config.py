@@ -10,6 +10,10 @@ class Settings(BaseSettings):
     CATALOG_DB_HOST: str = "catalog-db"
     CATALOG_DB_PORT: int = 5432
 
+    REDIS_URL: str = "redis://redis:6379/2"
+    CACHE_ENABLED: bool = True
+    CACHE_TTL_CATALOG: int = 600
+
     SERVICE_NAME: str = "catalog-service"
 
     @property

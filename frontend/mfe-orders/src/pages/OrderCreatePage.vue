@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { CreateOrderPayload } from '../types/order'
-import { createOrder } from '../services'
+import { createOrder, listCatalogProducts } from '../services'
+import type { CatalogProduct } from '../types/catalog'
 
 const router = useRouter()
 
@@ -11,8 +12,18 @@ const emit = defineEmits<{
 }>()
 
 const loading = ref(false)
+const loadingCatalog = ref(false)
+const catalogErrorMessage = ref('')
 const errorMessage = ref('')
 const successMessage = ref('')
+const catalogProducts = ref<CatalogProduct[]>([])
+
+const productOptions = computed(() =>
+  catalogProducts.value.map((product) => ({
+    title: `${product.name} (${product.ean})`,
+    value: product.ean,
+  })),
+)
 
 const form = reactive<CreateOrderPayload>({
   customer_name: '',
@@ -49,10 +60,30 @@ function resetForm() {
   ]
 }
 
+async function loadCatalogProducts() {
+  loadingCatalog.value = true
+  catalogErrorMessage.value = ''
+
+  try {
+    catalogProducts.value = await listCatalogProducts({ limit: 50 })
+  } catch (error) {
+    catalogErrorMessage.value =
+      error instanceof Error ? error.message : 'Falha ao carregar catálogo de produtos'
+  } finally {
+    loadingCatalog.value = false
+  }
+}
+
 async function submitOrder() {
   loading.value = true
   errorMessage.value = ''
   successMessage.value = ''
+
+  if (form.items.some((item) => !item.product_ean)) {
+    errorMessage.value = 'Selecione um produto para todos os itens.'
+    loading.value = false
+    return
+  }
 
   try {
     const payload: CreateOrderPayload = {
@@ -74,6 +105,8 @@ async function submitOrder() {
     loading.value = false
   }
 }
+
+onMounted(loadCatalogProducts)
 </script>
 
 <template>
@@ -98,15 +131,21 @@ async function submitOrder() {
           <v-btn variant="outlined" @click="addItem">Adicionar item</v-btn>
         </div>
 
+        <v-alert v-if="catalogErrorMessage" type="error" variant="tonal">
+          {{ catalogErrorMessage }}
+        </v-alert>
+
         <div v-for="(item, index) in form.items" :key="index" class="item-row">
-          <v-text-field
+          <v-select
             v-model="item.product_ean"
-            label="EAN do produto"
-            maxlength="14"
+            :items="productOptions"
+            :loading="loadingCatalog"
+            label="Produto"
             required
             variant="outlined"
-            placeholder="Ex: 7894900011517"
+            placeholder="Selecione um produto"
             hideDetails="auto"
+            clearable
           />
 
           <v-text-field

@@ -6,5 +6,6 @@ aiosqlite==0.22.1
 psycopg2-binary==2.9.9
 pydantic==2.9.2
 pydantic-settings==2.5.2
+redis[hiredis]>=7.3.0
 pytest==7.4.2
 pytest-asyncio==0.22.0

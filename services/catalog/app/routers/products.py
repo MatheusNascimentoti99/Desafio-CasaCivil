@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
+from app.decorators import cached, invalidates_cache
 from app.database import get_db
 from app.schemas import ProductCreate, ProductResponse
 from app.services import create_product, get_product_by_ean, list_products
@@ -9,6 +11,7 @@ router = APIRouter(prefix="/api/catalog/products", tags=["catalog"])
 
 
 @router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+@invalidates_cache("catalog:products:list:*", "catalog:products:item:*")
 async def create_new_product(payload: ProductCreate, db: AsyncSession = Depends(get_db)):
     existing = await get_product_by_ean(db, payload.ean)
     if existing:
@@ -22,6 +25,7 @@ async def create_new_product(payload: ProductCreate, db: AsyncSession = Depends(
 
 
 @router.get("/", response_model=list[ProductResponse])
+@cached(prefix="catalog:products:list", ttl=settings.CACHE_TTL_CATALOG)
 async def get_products(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
@@ -31,6 +35,7 @@ async def get_products(
 
 
 @router.get("/{ean}", response_model=ProductResponse)
+@cached(prefix="catalog:products:item", ttl=settings.CACHE_TTL_CATALOG)
 async def get_product(ean: str, db: AsyncSession = Depends(get_db)):
     product = await get_product_by_ean(db, ean)
     if not product:

@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.decorators import close_cache, init_cache
 from app.database import create_tables
 from app.routers import products
 
@@ -10,7 +11,9 @@ from app.routers import products
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_tables()
+    await init_cache()
     yield
+    await close_cache()
 
 
 app = FastAPI(
