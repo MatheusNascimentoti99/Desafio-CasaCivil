@@ -127,10 +127,6 @@ services:
     depends_on:
       orders-db:
         condition: service_healthy
-      redis:
-        condition: service_healthy
-      catalog-db:
-        condition: service_healthy
     networks:
       - backend
     restart: unless-stopped
